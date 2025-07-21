@@ -1,38 +1,270 @@
-.App {
+/* Additional BBS Terminal Styling for Flight Board Backoffice Components */
+
+/* Terminal Header Styling */
+.terminal-header {
+  margin-bottom: 2rem;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.system-info {
+  margin-top: 1rem;
+  font-size: 12px;
+  color: var(--terminal-dim);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Navigation Styling */
+.terminal-nav {
+  border: 1px solid var(--terminal-border);
+  padding: 1rem;
+  background: rgba(0, 255, 0, 0.02);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.nav-buttons {
   display: flex;
-  flex-direction: column;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* System Status */
+.system-status {
+  border: 1px solid var(--terminal-border);
+  padding: 0.5rem 1rem;
+  background: rgba(0, 255, 0, 0.02);
+}
+
+/* Flight List Styling */
+.flight-list {
+  min-height: 400px;
+}
+
+.data-summary {
+  font-size: 12px;
+  color: var(--terminal-dim);
+  border-bottom: 1px solid var(--terminal-border);
+  padding-bottom: 0.5rem;
+}
+
+.flight-table {
+  width: 100%;
+  font-size: 12px;
+}
+
+.flight-table th {
+  font-size: 11px;
+  padding: 6px 8px;
+}
+
+.flight-table td {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.action-buttons button {
+  font-size: 10px;
+  padding: 4px 8px;
+  margin: 0;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--terminal-border);
+  padding-top: 1rem;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-info {
+  font-size: 12px;
+  color: var(--terminal-dim);
+}
+
+/* Delete Confirmation Modal */
+.delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  z-index: 1000;
 }
 
-.App-link {
-  color: #61dafb;
+.delete-confirm-modal {
+  background: var(--terminal-bg);
+  border: 2px solid var(--terminal-error);
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 
+    inset 0 0 20px rgba(255, 68, 68, 0.1),
+    0 0 20px rgba(255, 68, 68, 0.3);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.delete-confirm-modal h3 {
+  color: var(--terminal-error);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Flight Form Styling */
+.flight-form {
+  max-width: 800px;
+}
+
+.form-section {
+  border: 1px solid var(--terminal-border);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background: rgba(0, 255, 0, 0.01);
+}
+
+.form-section legend {
+  padding: 0 0.5rem;
+  color: var(--terminal-highlight);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  margin-bottom: 0.25rem;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  margin-bottom: 0.25rem;
+}
+
+.form-field .error {
+  font-size: 11px;
+  color: var(--terminal-error);
+  margin-top: 0.25rem;
+  border: 1px solid var(--terminal-error);
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  border-top: 1px solid var(--terminal-border);
+  padding-top: 1rem;
+}
+
+/* Terminal Footer */
+.terminal-footer {
+  border-top: 1px solid var(--terminal-border);
+  padding-top: 1rem;
+  text-align: center;
+}
+
+.footer-info {
+  font-size: 11px;
+  color: var(--terminal-dim);
+}
+
+/* Responsive Design for Forms */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .nav-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .delete-confirm-modal {
+    margin: 1rem;
+    padding: 1rem;
+  }
+}
+
+/* Terminal Content Area */
+.terminal-content {
+  min-height: 60vh;
+  border: 1px solid var(--terminal-border);
+  padding: 1rem;
+  background: rgba(0, 255, 0, 0.01);
+}
+
+/* Health Check Specific */
+.health-check {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Status Badge Enhancements */
+.status {
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* ASCII Art Responsiveness */
+@media (max-width: 768px) {
+  .terminal-header h1 {
+    font-size: 8px;
+    line-height: 1.1;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminal-header h1 {
+    font-size: 6px;
   }
 }

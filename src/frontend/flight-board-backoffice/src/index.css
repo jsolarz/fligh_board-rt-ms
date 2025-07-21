@@ -1,13 +1,335 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* BBS Terminal Styling for Flight Board Backoffice */
+/* Old-school terminal aesthetic with green phosphor CRT monitor look */
+
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+:root {
+  /* BBS Terminal Color Palette */
+  --terminal-bg: #000000;
+  --terminal-text: #00ff00;
+  --terminal-accent: #ffffff;
+  --terminal-dim: #008800;
+  --terminal-border: #004400;
+  --terminal-error: #ff4444;
+  --terminal-warning: #ffff44;
+  --terminal-highlight: #44ff44;
+  
+  /* Terminal Effects */
+  --scanline-opacity: 0.02;
+  --flicker-speed: 0.15s;
+  --glow-size: 2px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
+
+body {
+  margin: 0;
+  font-family: 'Anonymous Pro', 'Space Mono', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  background: var(--terminal-bg);
+  color: var(--terminal-text);
+  overflow-x: hidden;
+  
+  /* CRT Monitor curvature effect */
+  background-image: 
+    radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.1) 100%);
+  
+  /* Subtle scanlines */
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 0, var(--scanline-opacity)) 2px,
+    rgba(0, 255, 0, var(--scanline-opacity)) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Terminal window styling */
+#root {
+  min-height: 100vh;
+  padding: 20px;
+  border: 2px solid var(--terminal-border);
+  margin: 10px;
+  background: var(--terminal-bg);
+  
+  /* Terminal glow effect */
+  box-shadow: 
+    inset 0 0 20px rgba(0, 255, 0, 0.1),
+    0 0 20px rgba(0, 255, 0, 0.2);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Anonymous Pro', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  
+  /* Text glow effect */
+  text-shadow: 
+    0 0 var(--glow-size) var(--terminal-text),
+    0 0 calc(var(--glow-size) * 2) var(--terminal-text);
+}
+
+h1 {
+  font-size: 24px;
+  color: var(--terminal-accent);
+  border-bottom: 2px solid var(--terminal-border);
+  padding-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 18px;
+  color: var(--terminal-highlight);
+}
+
+h3 {
+  font-size: 16px;
+}
+
+/* Terminal prompt styling */
+.terminal-prompt::before {
+  content: '> ';
+  color: var(--terminal-accent);
+  font-weight: bold;
+}
+
+/* Buttons with terminal aesthetics */
+button {
+  background: transparent;
+  border: 1px solid var(--terminal-text);
+  color: var(--terminal-text);
+  font-family: 'Anonymous Pro', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 4px;
+  
+  /* Button glow */
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+button:hover {
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 
+    inset 0 0 10px rgba(0, 255, 0, 0.2),
+    0 0 10px rgba(0, 255, 0, 0.3);
+  transform: scale(1.02);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Primary button variant */
+button.primary {
+  border-color: var(--terminal-highlight);
+  color: var(--terminal-highlight);
+}
+
+button.primary:hover {
+  background: rgba(68, 255, 68, 0.1);
+  box-shadow: 
+    inset 0 0 10px rgba(68, 255, 68, 0.2),
+    0 0 10px rgba(68, 255, 68, 0.3);
+}
+
+/* Danger button variant */
+button.danger {
+  border-color: var(--terminal-error);
+  color: var(--terminal-error);
+}
+
+button.danger:hover {
+  background: rgba(255, 68, 68, 0.1);
+  box-shadow: 
+    inset 0 0 10px rgba(255, 68, 68, 0.2),
+    0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+/* Form inputs */
+input, textarea, select {
+  background: transparent;
+  border: 1px solid var(--terminal-dim);
+  color: var(--terminal-text);
+  font-family: 'Anonymous Pro', monospace;
+  font-size: 14px;
+  padding: 8px 12px;
+  width: 100%;
+  margin-bottom: 12px;
+  
+  /* Input glow */
+  box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.1);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--terminal-text);
+  box-shadow: 
+    inset 0 0 5px rgba(0, 255, 0, 0.2),
+    0 0 5px rgba(0, 255, 0, 0.3);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--terminal-dim);
+  opacity: 0.7;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-family: 'Anonymous Pro', monospace;
+}
+
+th, td {
+  border: 1px solid var(--terminal-border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  background: rgba(0, 255, 0, 0.1);
+  color: var(--terminal-accent);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+tr:nth-child(even) {
+  background: rgba(0, 255, 0, 0.02);
+}
+
+tr:hover {
+  background: rgba(0, 255, 0, 0.05);
+}
+
+/* Status indicators */
+.status {
+  padding: 4px 8px;
+  border: 1px solid;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.status.on-time {
+  color: var(--terminal-highlight);
+  border-color: var(--terminal-highlight);
+  background: rgba(68, 255, 68, 0.1);
+}
+
+.status.delayed {
+  color: var(--terminal-warning);
+  border-color: var(--terminal-warning);
+  background: rgba(255, 255, 68, 0.1);
+}
+
+.status.cancelled {
+  color: var(--terminal-error);
+  border-color: var(--terminal-error);
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* Loading and error states */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--terminal-dim);
+}
+
+.loading::after {
+  content: '...';
+  animation: dots var(--flicker-speed) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.error {
+  color: var(--terminal-error);
+  border: 1px solid var(--terminal-error);
+  background: rgba(255, 68, 68, 0.1);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+/* Terminal flicker animation */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.98; }
+}
+
+.flicker {
+  animation: flicker var(--flicker-speed) infinite alternate;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #root {
+    margin: 5px;
+    padding: 10px;
+  }
+  
+  h1 {
+    font-size: 20px;
+  }
+  
+  button {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  
+  th, td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+/* Utility classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.flex { display: flex; }
+.justify-between { justify-content: space-between; }
+.align-center { align-items: center; }
+.gap-2 { gap: 1rem; }
