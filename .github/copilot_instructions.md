@@ -70,7 +70,14 @@ f. Engines do not publish events.
 g. ResourceAccess components do not publish events.
 h. Resources do not publish events.
 i. Engines, ResourceAccess, and Resources do not subscribe to events.
- 
+
+### Updated Copilot Instructions
+
+#### System Design Guidelines
+- Added a directive to ensure that all frontend interactions with the backend are routed through a **Queue/Bus Proxy**.
+- Emphasized the roles of **Manager**, **Engine**, and **Accessor** in the backend architecture.
+- Clarified that Managers should queue calls to other Managers when needed, following the IDesign Method's principles.
+
 ### Project Design Guidelines
 #### General
 a. Do not design a clock.
@@ -123,3 +130,4 @@ g. Always go through SDP review before the main work starts.
    - Add animations for frontend interactions.
    - Implement structured logging in the backend.
    - Provide Docker support for easy deployment.
+

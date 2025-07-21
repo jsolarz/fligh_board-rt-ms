@@ -120,7 +120,7 @@ The system must feature a live-updating flight board, a comprehensive backend AP
 
 * The submission must include the unit test project.
 
-* Include a README.md file wit:
+* Include a README.md file with:
 
   * Clear setup and run instructions for both the backend and frontend.
 
