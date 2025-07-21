@@ -3,56 +3,344 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Custom styles for flight board */
+/* Google Fonts for retro-futuristic styling */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Fira+Code:wght@300;400;500&display=swap");
+
+/* Retro-futuristic cyberpunk styles */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: "Orbitron", "Fira Code", monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb;
+  background: #0a0a0f;
+  color: #00ffff;
+  overflow-x: hidden;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+/* Cyberpunk background with grid and scanlines */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(
+      rgba(0, 255, 255, 0.03) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: -2;
 }
 
-/* Custom animation for smooth transitions */
-.transition-colors {
-  transition-property: color, background-color, border-color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* Animated scanline effect */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  animation: scanLine 4s linear infinite;
+  z-index: 1000;
+  pointer-events: none;
 }
 
-/* Loading animation */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a2e;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00ffff, #9d4edd);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+}
+
+/* Holographic glass effect */
+.holographic {
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(0, 255, 255, 0.05) 50%,
+    transparent 70%
+  );
+  animation: hologram 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Neon glow effects */
+.neon-text {
+  text-shadow: 0 0 5px currentColor, 0 0 10px currentColor,
+    0 0 15px currentColor, 0 0 20px currentColor;
+}
+
+.neon-border {
+  border: 1px solid currentColor;
+  box-shadow: 0 0 5px currentColor, inset 0 0 5px rgba(0, 255, 255, 0.1);
+}
+
+.neon-glow {
+  box-shadow: 0 0 10px currentColor, 0 0 20px currentColor,
+    0 0 30px currentColor;
+}
+
+/* Flight status colors with neon effects */
+.status-scheduled {
+  @apply bg-cyber-blue/20 text-neon-cyan border-neon-cyan;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.status-boarding {
+  @apply bg-neon-orange/20 text-neon-orange border-neon-orange;
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+.status-departed {
+  @apply bg-neon-green/20 text-neon-green border-neon-green;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.status-arrived {
+  @apply bg-neon-green/20 text-neon-green border-neon-green;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.status-delayed {
+  @apply bg-neon-magenta/20 text-neon-magenta border-neon-magenta;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+  animation: flicker 2s infinite;
+}
+
+.status-cancelled {
+  @apply bg-red-500/20 text-red-400 border-red-400;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+/* Cyberpunk button styles */
+.cyber-button {
+  @apply relative px-6 py-2 bg-transparent border font-mono text-sm uppercase tracking-wider;
+  @apply transition-all duration-300 hover:scale-105;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(0, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+}
+
+.cyber-button:hover {
+  text-shadow: 0 0 10px currentColor;
+  box-shadow: 0 0 20px currentColor;
+}
+
+.cyber-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.cyber-button:hover::before {
+  left: 100%;
+}
+
+/* Data table cyberpunk styling */
+.cyber-table {
+  background: rgba(10, 10, 15, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
+}
+
+.cyber-table th {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 26, 46, 0.8),
+    rgba(22, 33, 62, 0.8)
+  );
+  border-bottom: 2px solid #00ffff;
+  text-shadow: 0 0 5px #00ffff;
+  font-family: "Orbitron", monospace;
+}
+
+.cyber-table td {
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+  font-family: "Fira Code", monospace;
+}
+
+.cyber-table tr:hover {
+  background: rgba(0, 255, 255, 0.05);
+  box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+/* Loading spinner cyberpunk style */
+.cyber-spinner {
+  border: 3px solid rgba(0, 255, 255, 0.2);
+  border-top: 3px solid #00ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+/* Health status indicator */
+.health-connected {
+  color: #00ff00;
+  text-shadow: 0 0 10px #00ff00;
+}
+
+.health-disconnected {
+  color: #ff0040;
+  text-shadow: 0 0 10px #ff0040;
+  animation: flicker 1s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .cyber-button {
+    @apply px-4 py-1 text-xs;
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+/* Animation definitions */
+@keyframes scanLine {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
 }
 
-/* Flight status indicators */
-.status-scheduled {
-  @apply bg-blue-100 text-blue-800;
+@keyframes hologram {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(-50%) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-50%) translateY(-50%) rotate(0.5deg);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-50%) rotate(-0.5deg);
+  }
+  75% {
+    transform: translateX(-50%) translateY(-50%) rotate(0.3deg);
+  }
 }
-.status-boarding {
-  @apply bg-yellow-100 text-yellow-800;
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
-.status-departed {
-  @apply bg-green-100 text-green-800;
+
+/* Additional cyberpunk utilities */
+.cyber-button-sm {
+  @apply relative px-3 py-1 bg-transparent border font-mono text-xs uppercase tracking-wider;
+  @apply transition-all duration-300 hover:scale-105;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(0, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  clip-path: polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
 }
-.status-arrived {
-  @apply bg-green-100 text-green-800;
+
+.cyber-button-sm:hover {
+  text-shadow: 0 0 10px currentColor;
+  box-shadow: 0 0 15px currentColor;
 }
-.status-delayed {
-  @apply bg-red-100 text-red-800;
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
 }
-.status-cancelled {
-  @apply bg-red-100 text-red-800;
+
+.animate-scanlines {
+  animation: scanlines 2s linear infinite;
+}
+
+.font-cyber {
+  font-family: "Orbitron", monospace;
+}
+
+/* Shadow utilities */
+.shadow-neon-sm {
+  box-shadow: 0 0 10px currentColor;
+}
+
+.shadow-neon-md {
+  box-shadow: 0 0 20px currentColor;
+}
+
+.shadow-neon-lg {
+  box-shadow: 0 0 30px currentColor;
+}
+
+/* Additional animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scanlines {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
 }

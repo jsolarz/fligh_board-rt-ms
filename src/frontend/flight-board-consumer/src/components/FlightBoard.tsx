@@ -1,5 +1,5 @@
-// FlightBoard component - Main flight display component
-// Uses React Query for data fetching and state management
+// FlightBoard component - Cyberpunk flight matrix display
+// Neural interface for real-time flight data with holographic styling
 
 import React, { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
@@ -18,7 +18,7 @@ interface FlightBoardProps {
 }
 
 const FlightBoard: React.FC<FlightBoardProps> = ({
-  title = "Flight Board",
+  title = "FLIGHT_MATRIX",
   flightType,
   refreshInterval = 30000, // 30 seconds
 }) => {
@@ -70,27 +70,27 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
     })
   }
 
-  // Get status badge styling
+  // Get cyberpunk status badge styling
   const getStatusBadge = (status: string, isDelayed: boolean) => {
-    const baseClasses = "px-2 py-1 rounded-full text-xs font-medium"
+    const baseClasses = "px-3 py-1 rounded-sm text-xs font-mono uppercase tracking-wider neon-border"
 
     if (isDelayed) {
-      return `${baseClasses} bg-red-100 text-red-800`
+      return `${baseClasses} status-delayed`
     }
 
     switch (status) {
       case "Scheduled":
-        return `${baseClasses} bg-blue-100 text-blue-800`
+        return `${baseClasses} status-scheduled`
       case "Boarding":
-        return `${baseClasses} bg-yellow-100 text-yellow-800`
+        return `${baseClasses} status-boarding`
       case "Departed":
-        return `${baseClasses} bg-green-100 text-green-800`
+        return `${baseClasses} status-departed`
       case "Arrived":
-        return `${baseClasses} bg-green-100 text-green-800`
+        return `${baseClasses} status-arrived`
       case "Cancelled":
-        return `${baseClasses} bg-red-100 text-red-800`
+        return `${baseClasses} status-cancelled`
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`
+        return `${baseClasses} status-scheduled`
     }
   }
 
@@ -98,14 +98,8 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
   const handlePageChange = (newPage: number) => {
     setSearchParams((prev) => ({ ...prev, page: newPage }))
   }
-
-  // Handle search
-  const handleSearch = (newSearchParams: Partial<FlightSearchDto>) => {
-    setSearchParams((prev) => ({ ...prev, ...newSearchParams, page: 1 }))
-  }
-
   if (isLoading) {
-    return <LoadingSpinner message="Loading flights..." />
+    return <LoadingSpinner message="ACCESSING_FLIGHT_DATABASE..." />
   }
 
   if (isError) {
@@ -119,16 +113,32 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{title}</h1>
+      {/* Cyberpunk Header */}
+      <div className="mb-8 holographic rounded-lg p-6">
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-neon-cyan rounded-full animate-pulse"></div>
+            <h1 className="text-2xl font-cyber font-bold text-neon-cyan neon-text uppercase tracking-wider">
+              {title}
+            </h1>
+          </div>
+          <div className="flex-1 h-px bg-gradient-to-r from-neon-cyan/50 to-transparent"></div>
+        </div>
+
         <div className="flex justify-between items-center">
-          <p className="text-gray-600">
-            Showing {flights.length} of {pagination?.totalCount || 0} flights
-          </p>
-          <div className="flex space-x-2">
+          <div className="font-mono text-sm text-neon-cyan/80">
+            <span className="text-neon-green">[ACTIVE]</span> {flights.length} OF {pagination?.totalCount || 0} FLIGHTS_LOADED
+          </div>
+          <div className="flex space-x-3">
             <button
               onClick={() => refetch()}
+              className="cyber-button text-neon-cyan border-neon-cyan hover:shadow-neon-md"
+            >
+              REFRESH_DATA
+            </button>
+          </div>
+        </div>
+      </div>
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
             >
               Refresh
