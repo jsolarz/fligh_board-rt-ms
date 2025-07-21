@@ -497,8 +497,8 @@ src/
 
 **Ports:**
 - API: localhost:5183
-- Consumer Frontend: localhost:3000 (planned)
-- Backoffice Frontend: localhost:3001 (planned)
+- Consumer Frontend: localhost:3000 (cyberpunk styled)
+- Backoffice Frontend: localhost:3001 (BBS terminal styled)
 
 **Database:**
 - Location: `d:\personal\fligh_board-rt-ms\Data\flightboard.db`
