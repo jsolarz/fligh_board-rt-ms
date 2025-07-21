@@ -11,7 +11,26 @@
 **Database:** SQLite (secure location: `Data/flightboard.db`) ✅  
 **Frontend Consumer:** CYBERPUNK STYLED with SignalR (COMPLETED) ✅  
 **Frontend Backoffice:** BBS TERMINAL STYLING (COMPLETED) ✅  
-**Real-time Updates:** SignalR integration working across both frontends ✅
+**Real-time Updates:** SignalR integration working across both frontends ✅  
+**Documentation:** Organized in `docs/` folder with git history preserved ✅
+
+## Project Structure Update
+**Documentation Location:** All docs moved to `docs/` folder:
+- `docs/objectives.md` - Original requirements and core features
+- `docs/implementation_guide.md` - Step-by-step development approach  
+- `docs/software_design_document.md` - Architectural design and system overview
+- `docs/use_cases.md` - Functional requirements and user flows
+- `docs/signalr-test.html` - SignalR testing portal
+- `docs/summary.md` - Project summary
+- `docs/implementation_guide_streamlined.md` - Condensed guide
+
+**Root Level:** Clean structure with only essential files
+- `.plan` - Development log (this file)
+- `README.md` - Setup and run instructions
+- `.gitignore` - Git ignore rules
+- `LICENSE` - Project license
+- `Data/` - Database files (secure location)
+- `src/` - All source code
 
 ---
 
@@ -471,19 +490,219 @@ src/
 
 ---
 
+## ALIGNMENT ITEMS TO FIX
+
+## ALIGNMENT ITEMS TO FIX
+
+### **CRITICAL (Before Step 7):**
+1. **🔥 Server-Side Status Calculation** - MISSING CORE BUSINESS LOGIC
+   - **What:** Implement time-based flight status calculation in FlightService
+   - **Why:** Required by `docs/objectives.md` - status must be calculated server-side
+   - **Business Rules:** 
+     - Boarding: 30 minutes before departure until departure time
+     - Departed: From departure time until 60 minutes after
+     - Landed: More than 60 minutes after departure time
+     - Scheduled: More than 30 minutes before departure time
+   - **Files to modify:** `FlightService.cs`, `FlightDtos.cs`
+   - **Impact:** HIGH - Core requirement, affects all status displays
+
+2. **🔍 Search/Filter API Endpoint** - MISSING REQUIRED ENDPOINT
+   - **What:** Implement `GET /api/flights/search?status={status}&destination={destination}`
+   - **Why:** Explicitly required in `docs/objectives.md`
+   - **Features:** Combined filtering by status and/or destination with pagination
+   - **Files to modify:** `FlightsController.cs`, `FlightService.cs`
+   - **Impact:** HIGH - Required for Step 7 completion
+
+3. **📅 Future Date Validation** - MISSING BUSINESS RULE
+   - **What:** Add validation that departure time must be in the future
+   - **Why:** Required business rule in `docs/objectives.md`
+   - **Implementation:** Add custom validation attribute to FlightDto
+   - **Files to modify:** `FlightDtos.cs`, possibly new validation attribute
+   - **Impact:** LOW - Simple validation rule, easy fix
+
+### **IMPORTANT (Steps 8-10):**
+4. **🎯 Redux Toolkit Integration** - TECHNOLOGY GAP
+   - **What:** Add Redux Toolkit for UI state management (filter values, form state)
+   - **Why:** Specified in `docs/objectives.md` technology requirements
+   - **Scope:** Client-side state like filter values, form inputs, UI preferences
+   - **Files to modify:** Both frontend apps - add Redux store, reducers, actions
+   - **Impact:** MEDIUM - Architecture requirement, affects state management
+
+5. **🧪 Unit Testing Infrastructure** - MISSING REQUIRED FEATURE
+   - **What:** Create test project with xUnit and Moq for backend testing
+   - **Why:** Unit tests are required in `docs/objectives.md`
+   - **Focus:** Critical business logic (validation, status calculation, service methods)
+   - **New project:** `FlightBoard.Tests` with test cases for FlightService
+   - **Impact:** HIGH - Explicitly required deliverable
+
+6. **🏗️ Clean Architecture Refactoring** - ARCHITECTURE GAP
+   - **What:** Refactor to Domain, Application, Infrastructure, API layers
+   - **Why:** Required by `docs/objectives.md` Clean Architecture principles
+   - **Current:** Simple layered approach (Controller → Service → Repository)
+   - **New structure:** Domain models, Application services, Infrastructure repositories
+   - **Impact:** MEDIUM - Better separation of concerns, more maintainable
+
+### **DOCUMENTATION SYNC:**
+7. **📚 Implementation Guide Alignment** - KEEP IN SYNC
+   - **What:** Update `docs/implementation_guide.md` with actual progress
+   - **Status:** Steps 1-6 completed, alignment gaps identified
+   - **Missing:** Add alignment fix tasks before Step 7
+   - **Files to update:** `docs/implementation_guide.md`, this `.plan` file
+   - **Impact:** LOW - Documentation consistency
+
+### **FUTURE CONSIDERATIONS:**
+8. **🔐 JWT Authentication** - PLANNED FOR STEP 11
+   - **What:** Implement user authentication and role-based access control
+   - **Scope:** Protect admin endpoints, user management
+   - **Files:** New User entities, auth middleware, JWT service
+   
+9. **🐳 Docker Deployment** - PLANNED FOR STEP 15
+   - **What:** Containerize application for deployment
+   - **Scope:** Dockerfile, docker-compose, environment configuration
+   - **Files:** Dockerfile, docker-compose.yml, deployment configs
+
+---
+
+## DETAILED IMPLEMENTATION TASKS
+
+### **Task 1: Server-Side Status Calculation** 🔥
+**Files to modify:**
+- `src/FlightBoard.Api/Services/FlightService.cs`
+- `src/FlightBoard.Api/DTOs/FlightDtos.cs`  
+- `src/FlightBoard.Api/Models/Flight.cs` (if needed)
+
+**Implementation steps:**
+1. Add `CalculateFlightStatus(DateTime scheduledDeparture)` method to FlightService
+2. Update `GetAllFlights()` to calculate status for each flight
+3. Update `GetFlightById()` to calculate status
+4. Ensure DTOs return calculated status instead of stored status
+5. Test status calculation with various time scenarios
+
+**Business Logic:**
+```csharp
+public FlightStatus CalculateFlightStatus(DateTime scheduledDeparture)
+{
+    var now = DateTime.UtcNow;
+    var minutesUntilDeparture = (scheduledDeparture - now).TotalMinutes;
+    
+    return minutesUntilDeparture switch
+    {
+        > 30 => FlightStatus.Scheduled,        // More than 30 min before
+        <= 30 and > 0 => FlightStatus.Boarding, // 30 min before to departure
+        <= 0 and > -60 => FlightStatus.Departed, // 0 to 60 min after departure
+        <= -60 => FlightStatus.Landed,         // More than 60 min after
+        _ => FlightStatus.Scheduled
+    };
+}
+```
+
+### **Task 2: Search/Filter API Endpoint** 🔍
+**Files to modify:**
+- `src/FlightBoard.Api/Controllers/FlightsController.cs`
+- `src/FlightBoard.Api/Services/FlightService.cs`
+
+**Implementation steps:**
+1. Add `SearchFlights()` method to FlightService with optional status/destination filters
+2. Add `[HttpGet("search")]` endpoint to FlightsController
+3. Support query parameters: `?status={status}&destination={destination}&page={page}&pageSize={pageSize}`
+4. Return paginated results with calculated status
+5. Test with various filter combinations
+
+**API Signature:**
+```csharp
+[HttpGet("search")]
+public async Task<ActionResult<PagedResponse<FlightDto>>> SearchFlights(
+    [FromQuery] string? status = null,
+    [FromQuery] string? destination = null,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
+```
+
+### **Task 3: Future Date Validation** 📅
+**Files to modify:**
+- `src/FlightBoard.Api/DTOs/FlightDtos.cs`
+
+**Implementation steps:**
+1. Create custom validation attribute `FutureDateAttribute`
+2. Apply to `ScheduledDepartureTime` property in CreateFlightDto
+3. Test validation with past dates
+4. Ensure proper error messages returned
+
+**Validation Implementation:**
+```csharp
+public class FutureDateAttribute : ValidationAttribute
+{
+    public override bool IsValid(object value)
+    {
+        if (value is DateTime dateTime)
+            return dateTime > DateTime.UtcNow;
+        return false;
+    }
+}
+```
+
+### **Task 4: Unit Testing Infrastructure** 🧪
+**New project to create:**
+- `src/FlightBoard.Tests/FlightBoard.Tests.csproj`
+
+**Implementation steps:**
+1. Create test project: `dotnet new xunit -n FlightBoard.Tests`
+2. Add project reference to FlightBoard.Api
+3. Install Moq package for mocking
+4. Create test classes for FlightService, status calculation
+5. Add tests for validation, CRUD operations
+6. Configure test database (in-memory SQLite)
+
+**Test Structure:**
+```
+FlightBoard.Tests/
+├── Services/
+│   ├── FlightServiceTests.cs
+│   └── StatusCalculationTests.cs
+├── Controllers/
+│   └── FlightsControllerTests.cs
+└── Helpers/
+    └── TestDatabaseHelper.cs
+```
+
+---
+
+## STEP 7 READINESS CHECKLIST
+
+**Prerequisites (MUST fix before Step 7):**
+- [ ] Server-side status calculation implemented
+- [ ] Search/filter API endpoint created
+- [ ] Future date validation added
+- [ ] Unit tests for status calculation logic
+
+**Step 7 Goals:**
+- [ ] Frontend search/filter UI implementation
+- [ ] Integration with new search API endpoint
+- [ ] Advanced filtering capabilities
+- [ ] Performance optimization for large datasets
+
+---
+
 ## Next Session TODO
 
-1. **Complete Step 3 commit**
-2. **Install frontend dependencies** (React Query, Axios)  
-3. **Create TypeScript interfaces** matching DTOs
-4. **Build FlightBoard component**
-5. **Test frontend-backend integration**
+### **IMMEDIATE PRIORITY:**
+1. **🔥 Fix server-side status calculation** (30min task)
+2. **🔍 Implement search/filter API** (45min task)
+3. **📅 Add future date validation** (15min task)
+4. **🧪 Create unit test project** (30min task)
 
-**ETA:** Step 4 completion by end of current session
+### **STEP 7 PREPARATION:**
+5. **Start Step 7** - Search and Filtering implementation
+6. **Test status calculation** with real-time scenarios
+7. **Validate search API** with complex filter combinations
+
+**ETA:** Alignment fixes + Step 7 start by end of current session
 
 ---
 
 *"The best code is the code you don't have to write." - Following this by keeping dependencies minimal and leveraging .NET 9's built-in capabilities.*
+
+*"First, solve the problem. Then, write the code." - Addressing alignment gaps before proceeding with new features.*
 
 ---
 
