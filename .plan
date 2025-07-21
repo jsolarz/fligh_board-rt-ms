@@ -731,31 +731,34 @@ FlightBoard.Tests/
 ## CURRENT SESSION: ALIGNMENT FIXES COMPLETED ✅
 
 **Session Goal:** Fix critical alignment gaps (Tasks 1-3) before proceeding to Step 7  
-**STATUS:** COMPLETED ✅ - All critical alignment tasks implemented  
+**STATUS:** COMPLETED ✅ - All critical alignment tasks implemented AND TESTED  
 **Next:** Ready to proceed with Step 7 (Search and Filtering)
 
-### ✅ ALIGNMENT TASK 1: Server-Side Status Calculation - COMPLETED
+### ✅ ALIGNMENT TASK 1: Server-Side Status Calculation - COMPLETED & TESTED
 **What was implemented:**
 - Added `CalculateFlightStatus()` method to FlightService with time-based business rules
 - **Business Logic:** Boarding (30min before), Departed (0-60min after), Landed (60min+ after), Scheduled (30min+ before)
 - Updated all service methods (GetFlightsAsync, GetFlightByIdAsync, CreateFlightAsync, UpdateFlightAsync, etc.)
 - Enhanced FlightMappingService with calculated status overloads
-- **Impact:** HIGH ✅ - Core requirement now satisfied, all status displays use server-side calculation
+- **TESTING VERIFIED:** ✅ API returns calculated status "Scheduled" for future flights
+- **Impact:** HIGH ✅ - Core requirement satisfied, all status displays use server-side calculation
 
-### ✅ ALIGNMENT TASK 2: Search/Filter API Endpoint - COMPLETED  
+### ✅ ALIGNMENT TASK 2: Search/Filter API Endpoint - COMPLETED & TESTED  
 **What was implemented:**
 - Added `GET /api/flights/search` endpoint to FlightsController
 - **Parameters:** `?status={status}&destination={destination}&page={page}&pageSize={pageSize}`
 - Combined filtering by status and/or destination with pagination
 - Uses existing FlightService.GetFlightsAsync with FlightSearchDto
-- **Impact:** HIGH ✅ - Required endpoint for Step 7 now available
+- **TESTING VERIFIED:** ✅ `curl "localhost:5183/api/flights/search?status=Scheduled&pageSize=3"` returns filtered results
+- **Impact:** HIGH ✅ - Required endpoint for Step 7 now available and functional
 
-### ✅ ALIGNMENT TASK 3: Future Date Validation - COMPLETED
+### ✅ ALIGNMENT TASK 3: Future Date Validation - COMPLETED & TESTED
 **What was implemented:**
 - Created `FutureDateAttribute` custom validation attribute
 - Applied to `ScheduledDeparture` field in `CreateFlightDto`
 - Validates that departure time must be in the future
 - Custom error message: "Scheduled departure must be in the future"
+- **TESTING VERIFIED:** ✅ Past dates rejected with validation error, future dates accepted
 - **Impact:** LOW ✅ - Business rule validation now enforced
 
 **Technical Changes Made:**
@@ -765,4 +768,5 @@ FlightBoard.Tests/
 - **FlightDtos.cs:** Added FutureDate validation attribute
 - **New:** FutureDateAttribute.cs custom validation class
 - **Build Status:** ✅ Compiles successfully
-- **API Status:** ✅ Ready for testing
+- **API Status:** ✅ Running on localhost:5183 and responding to all endpoints
+- **Testing Status:** ✅ ALL ENDPOINTS TESTED AND WORKING

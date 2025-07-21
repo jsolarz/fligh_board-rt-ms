@@ -1,10 +1,12 @@
 // FlightBoard component - Cyberpunk flight matrix display
-import React, { useState } from "react"
+import React, { useState, useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { FlightApiService } from "../services/flight-api.service"
 import { FlightDto, FlightSearchDto, FlightType } from "../types/flight.types"
 import LoadingSpinner from "./LoadingSpinner"
 import ErrorAlert from "./ErrorAlert"
+import SearchFilters from "./SearchFilters"
+import Pagination from "./Pagination"
 import useSignalR from "../hooks/useSignalR"
 
 interface FlightBoardProps {
@@ -34,6 +36,10 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
         ? ["Arrivals"]
         : ["AllFlights"],
   })
+  // Handle search parameter changes with useCallback to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((newSearchParams: FlightSearchDto) => {
+    setSearchParams(newSearchParams)
+  }, [])
 
   const {
     data: flightsData,
@@ -44,7 +50,22 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
   } = useQuery({
     queryKey: ["flights", searchParams],
     queryFn: () => {
-      if (flightType === FlightType.Departure) {
+      // Use search endpoint if any filters are active (beyond basic pagination and type)
+      const hasFilters = Boolean(
+        searchParams.flightNumber ||
+        searchParams.destination ||
+        searchParams.status ||
+        searchParams.airline ||
+        searchParams.origin ||
+        searchParams.isDelayed ||
+        searchParams.fromDate ||
+        searchParams.toDate
+      )
+
+      if (hasFilters) {
+        // Use advanced search endpoint when filters are active
+        return FlightApiService.searchFlights(searchParams)
+      } else if (flightType === FlightType.Departure) {
         return FlightApiService.getDepartures(searchParams)
       } else if (flightType === FlightType.Arrival) {
         return FlightApiService.getArrivals(searchParams)
@@ -118,6 +139,13 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Search and Filter Interface */}
+      <SearchFilters
+        searchParams={searchParams}
+        onSearchChange={handleSearchChange}
+        isLoading={isLoading}
+      />
 
       {/* Flight Table */}
       <div className="holographic rounded-lg overflow-hidden border border-neon-cyan/30">
@@ -216,66 +244,18 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
             NEURAL_LINK_SEARCHING...
           </div>
         </div>
-      )}
-
-      {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-neon-cyan/60 font-mono">
-            Showing{" "}
-            <span className="font-medium text-neon-cyan">
-              {(pagination.page - 1) * pagination.pageSize + 1}
-            </span>{" "}
-            to{" "}
-            <span className="font-medium text-neon-cyan">
-              {Math.min(
-                pagination.page * pagination.pageSize,
-                pagination.totalCount
-              )}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium text-neon-cyan">
-              {pagination.totalCount}
-            </span>{" "}
-            results
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={!pagination.hasPrevious}
-              className="cyber-button text-neon-cyan border-neon-cyan disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              PREV
-            </button>
-            {Array.from(
-              { length: Math.min(5, pagination.totalPages) },
-              (_, i) => {
-                const pageNum = Math.max(1, pagination.page - 2) + i
-                if (pageNum > pagination.totalPages) return null
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`cyber-button ${
-                      pageNum === pagination.page
-                        ? "text-neon-cyan border-neon-cyan bg-neon-cyan/10"
-                        : "text-neon-cyan/60 border-neon-cyan/30 hover:text-neon-cyan hover:border-neon-cyan"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                )
-              }
-            )}
-            <button
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={!pagination.hasNext}
-              className="cyber-button text-neon-cyan border-neon-cyan disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              NEXT
-            </button>
-          </div>
-        </div>
+      )}      {/* Pagination */}
+      {pagination && (
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          hasNext={pagination.hasNext}
+          hasPrevious={pagination.hasPrevious}
+          totalCount={pagination.totalCount}
+          currentPageSize={pagination.currentPageSize}
+          onPageChange={handlePageChange}
+          isLoading={isLoading}
+        />
       )}
     </div>
   )

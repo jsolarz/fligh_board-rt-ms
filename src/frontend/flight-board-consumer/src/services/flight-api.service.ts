@@ -105,6 +105,17 @@ export class FlightApiService {
     return response.data
   }
 
+  // Search flights with advanced filtering
+  static async searchFlights(
+    searchParams: FlightSearchDto = {}
+  ): Promise<PagedResponse<FlightDto>> {
+    const response: AxiosResponse<PagedResponse<FlightDto>> =
+      await apiClient.get("/flights/search", {
+        params: searchParams,
+      })
+    return response.data
+  }
+
   // Get active flights (currently in progress)
   static async getActiveFlights(): Promise<FlightDto[]> {
     const response: AxiosResponse<FlightDto[]> = await apiClient.get(
