@@ -1,35 +1,41 @@
 // Main App component for Flight Board Backoffice Admin Portal
 // BBS Terminal styling with flight management interface
 
-import React, { useState } from "react"
+import React from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { Provider } from "react-redux"
 import { queryClient } from "./config/query-client"
+import { store } from "./store"
 import { FlightList, FlightForm, HealthCheck } from "./components"
 import {
   FlightDto,
   CreateFlightDto,
   UpdateFlightDto,
 } from "./types/flight.types"
+import { useAppSelector, useAppDispatch } from "./store"
+import { setCurrentMode } from "./store/slices/uiSlice"
+import { setSelectedFlight } from "./store/slices/flightManagementSlice"
 import "./App.css"
 
-// App modes for navigation
-type AppMode = "list" | "create" | "edit"
-
-function App() {
-  const [mode, setMode] = useState<AppMode>("list")
-  const [editingFlight, setEditingFlight] = useState<FlightDto | undefined>()
+// Admin Content Component with Redux integration
+const AdminContent: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const mode = useAppSelector((state: any) => state.ui.currentMode)
+  const editingFlight = useAppSelector(
+    (state: any) => state.flightManagement.selectedFlight
+  )
 
   // Handle flight creation
   const handleCreateFlight = () => {
-    setEditingFlight(undefined)
-    setMode("create")
+    dispatch(setSelectedFlight(null))
+    dispatch(setCurrentMode("create"))
   }
 
   // Handle flight editing
   const handleEditFlight = (flight: FlightDto) => {
-    setEditingFlight(flight)
-    setMode("edit")
+    dispatch(setSelectedFlight(flight))
+    dispatch(setCurrentMode("edit"))
   }
 
   // Handle form submission
@@ -38,14 +44,14 @@ function App() {
   ) => {
     // This will be implemented with the actual API calls
     console.log("[ADMIN] Form submitted:", flightData)
-    setMode("list")
-    setEditingFlight(undefined)
+    dispatch(setCurrentMode("list"))
+    dispatch(setSelectedFlight(null))
   }
 
   // Handle form cancellation
   const handleFormCancel = () => {
-    setMode("list")
-    setEditingFlight(undefined)
+    dispatch(setCurrentMode("list"))
+    dispatch(setSelectedFlight(null))
   }
 
   // Handle flight deletion
@@ -95,7 +101,7 @@ function App() {
           <div className="nav-buttons mt-1">
             <button
               className={mode === "list" ? "primary" : ""}
-              onClick={() => setMode("list")}
+              onClick={() => dispatch(setCurrentMode("list"))}
             >
               [1] FLIGHT_DATABASE
             </button>
@@ -153,6 +159,17 @@ function App() {
       {/* React Query DevTools (only in development) */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
+  )
+}
+
+// Main App component with Redux Provider
+function App() {
+  return (
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <AdminContent />
+      </QueryClientProvider>
+    </Provider>
   )
 }
 

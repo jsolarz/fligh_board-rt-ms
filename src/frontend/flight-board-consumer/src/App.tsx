@@ -1,19 +1,26 @@
-import React, { useState } from "react"
+import React from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
+import { Provider } from "react-redux"
 import queryClient from "./config/query-client"
+import store from "./store"
 import FlightBoard from "./components/FlightBoard"
 import HealthCheck from "./components/HealthCheck"
 import { FlightType } from "./types/flight.types"
+import { useAppSelector, useAppDispatch } from "./store"
+import { setCurrentView } from "./store/slices/uiSlice"
 import useSignalR from "./hooks/useSignalR"
 import "./App.css"
 
-function App() {
-  const [currentView, setCurrentView] = useState<
-    "all" | "departures" | "arrivals"
-  >("all")
+function AppContent() {
+  const dispatch = useAppDispatch()
+  const currentView = useAppSelector((state) => state.ui.currentView)
 
   // Initialize SignalR connection at app level for global notifications
   useSignalR({ autoConnect: true })
+
+  const handleViewChange = (view: "all" | "departures" | "arrivals") => {
+    dispatch(setCurrentView(view))
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -36,12 +43,11 @@ function App() {
                 </div>
                 <div className="hidden md:block h-8 w-px bg-neon-cyan/30"></div>
                 <HealthCheck />
-              </div>
-
+              </div>{" "}
               {/* Cyberpunk Navigation */}
               <nav className="flex space-x-2">
                 <button
-                  onClick={() => setCurrentView("all")}
+                  onClick={() => handleViewChange("all")}
                   className={`cyber-button ${
                     currentView === "all"
                       ? "text-neon-cyan border-neon-cyan"
@@ -51,7 +57,7 @@ function App() {
                   ALL_FLIGHTS
                 </button>
                 <button
-                  onClick={() => setCurrentView("departures")}
+                  onClick={() => handleViewChange("departures")}
                   className={`cyber-button ${
                     currentView === "departures"
                       ? "text-neon-orange border-neon-orange"
@@ -61,7 +67,7 @@ function App() {
                   DEPARTURES
                 </button>
                 <button
-                  onClick={() => setCurrentView("arrivals")}
+                  onClick={() => handleViewChange("arrivals")}
                   className={`cyber-button ${
                     currentView === "arrivals"
                       ? "text-neon-green border-neon-green"
@@ -150,6 +156,14 @@ function App() {
         </div>
       </div>
     </QueryClientProvider>
+  )
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   )
 }
 
