@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SignalR Test - Flight Board System</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        background: #0a0a0f;
+        color: #00ffff;
+        padding: 20px;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #00ffff;
+        background: rgba(0, 255, 255, 0.1);
+      }
+      .connected {
+        border-color: #00ff00;
+        color: #00ff00;
+      }
+      .disconnected {
+        border-color: #ff0000;
+        color: #ff0000;
+      }
+      .event {
+        background: rgba(255, 0, 255, 0.1);
+        border-left: 3px solid #ff00ff;
+        padding: 10px;
+        margin: 5px 0;
+      }
+      button {
+        background: transparent;
+        border: 1px solid #00ffff;
+        color: #00ffff;
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+      }
+      button:hover {
+        background: rgba(0, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🚀 SKYNET FLIGHT BOARD - SignalR Test Portal</h1>
+
+    <div id="status" class="status disconnected">
+      STATUS: NEURAL_LINK_SEVERED
+    </div>
+
+    <div>
+      <button onclick="connect()">CONNECT</button>
+      <button onclick="disconnect()">DISCONNECT</button>
+      <button onclick="joinAllFlights()">JOIN ALL_FLIGHTS</button>
+      <button onclick="joinDepartures()">JOIN DEPARTURES</button>
+      <button onclick="joinArrivals()">JOIN ARRIVALS</button>
+      <button onclick="clearEvents()">CLEAR_LOG</button>
+    </div>
+
+    <h2>📡 REAL-TIME EVENT LOG</h2>
+    <div id="events"></div>
+
+    <script src="https://unpkg.com/@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+    <script>
+      let connection = null
+
+      function updateStatus(isConnected, message = "") {
+        const statusEl = document.getElementById("status")
+        if (isConnected) {
+          statusEl.className = "status connected"
+          statusEl.innerHTML = "STATUS: NEURAL_LINK_ACTIVE " + message
+        } else {
+          statusEl.className = "status disconnected"
+          statusEl.innerHTML = "STATUS: NEURAL_LINK_SEVERED " + message
+        }
+      }
+
+      function addEvent(type, data) {
+        const eventsEl = document.getElementById("events")
+        const timestamp = new Date().toLocaleTimeString()
+        const eventEl = document.createElement("div")
+        eventEl.className = "event"
+        eventEl.innerHTML = `
+                <strong>[${timestamp}] ${type.toUpperCase()}</strong><br>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `
+        eventsEl.insertBefore(eventEl, eventsEl.firstChild)
+      }
+
+      function initConnection() {
+        if (connection) return
+
+        connection = new signalR.HubConnectionBuilder()
+          .withUrl("http://localhost:5000/flighthub")
+          .withAutomaticReconnect([0, 2000, 10000, 30000])
+          .build()
+
+        // Event handlers
+        connection.on("FlightCreated", (flight) => {
+          addEvent("FlightCreated", flight)
+        })
+
+        connection.on("FlightUpdated", (flight) => {
+          addEvent("FlightUpdated", flight)
+        })
+
+        connection.on("FlightStatusChanged", (flight, oldStatus, newStatus) => {
+          addEvent("FlightStatusChanged", {
+            flight: flight,
+            oldStatus: oldStatus,
+            newStatus: newStatus,
+          })
+        })
+
+        connection.on("FlightAdded", (flight) => {
+          addEvent("FlightAdded", flight)
+        })
+
+        // Connection events
+        connection.onreconnecting(() => {
+          updateStatus(false, "(RECONNECTING...)")
+        })
+
+        connection.onreconnected(() => {
+          updateStatus(true, "(RECONNECTED)")
+        })
+
+        connection.onclose(() => {
+          updateStatus(false, "(CONNECTION_CLOSED)")
+        })
+      }
+
+      async function connect() {
+        initConnection()
+        try {
+          await connection.start()
+          updateStatus(true)
+          addEvent("System", "Connected to SignalR hub")
+        } catch (error) {
+          updateStatus(false, `(ERROR: ${error.message})`)
+          addEvent("Error", error.message)
+        }
+      }
+
+      async function disconnect() {
+        if (connection) {
+          await connection.stop()
+          updateStatus(false)
+          addEvent("System", "Disconnected from SignalR hub")
+        }
+      }
+
+      async function joinAllFlights() {
+        if (connection && connection.state === "Connected") {
+          try {
+            await connection.invoke("JoinGroup", "AllFlights")
+            addEvent("System", "Joined AllFlights group")
+          } catch (error) {
+            addEvent("Error", `Failed to join AllFlights: ${error.message}`)
+          }
+        }
+      }
+
+      async function joinDepartures() {
+        if (connection && connection.state === "Connected") {
+          try {
+            await connection.invoke("JoinGroup", "Departures")
+            addEvent("System", "Joined Departures group")
+          } catch (error) {
+            addEvent("Error", `Failed to join Departures: ${error.message}`)
+          }
+        }
+      }
+
+      async function joinArrivals() {
+        if (connection && connection.state === "Connected") {
+          try {
+            await connection.invoke("JoinGroup", "Arrivals")
+            addEvent("System", "Joined Arrivals group")
+          } catch (error) {
+            addEvent("Error", `Failed to join Arrivals: ${error.message}`)
+          }
+        }
+      }
+
+      function clearEvents() {
+        document.getElementById("events").innerHTML = ""
+      }
+
+      // Auto-connect on load
+      window.onload = function () {
+        addEvent("System", "SignalR Test Portal initialized")
+        addEvent(
+          "Info",
+          "Click CONNECT to establish neural link with the flight board system"
+        )
+      }
+    </script>
+  </body>
+</html>

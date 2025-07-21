@@ -9,7 +9,6 @@ import {
   CreateFlightDto,
   UpdateFlightDto,
   UpdateStatusRequest,
-  ApiResponse,
 } from "../types/flight.types"
 
 // API configuration

@@ -4,12 +4,16 @@ import queryClient from "./config/query-client"
 import FlightBoard from "./components/FlightBoard"
 import HealthCheck from "./components/HealthCheck"
 import { FlightType } from "./types/flight.types"
+import useSignalR from "./hooks/useSignalR"
 import "./App.css"
 
 function App() {
   const [currentView, setCurrentView] = useState<
     "all" | "departures" | "arrivals"
   >("all")
+
+  // Initialize SignalR connection at app level for global notifications
+  useSignalR({ autoConnect: true })
 
   return (
     <QueryClientProvider client={queryClient}>

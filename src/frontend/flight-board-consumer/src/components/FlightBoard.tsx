@@ -5,6 +5,7 @@ import { FlightApiService } from "../services/flight-api.service"
 import { FlightDto, FlightSearchDto, FlightType } from "../types/flight.types"
 import LoadingSpinner from "./LoadingSpinner"
 import ErrorAlert from "./ErrorAlert"
+import useSignalR from "../hooks/useSignalR"
 
 interface FlightBoardProps {
   title?: string
@@ -21,6 +22,17 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
     page: 1,
     pageSize: 20,
     type: flightType,
+  })
+
+  // SignalR real-time connection with group filtering
+  const { isConnected, connectionState } = useSignalR({
+    autoConnect: true,
+    joinGroups:
+      flightType === FlightType.Departure
+        ? ["Departures"]
+        : flightType === FlightType.Arrival
+        ? ["Arrivals"]
+        : ["AllFlights"],
   })
 
   const {
@@ -80,9 +92,21 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
         </div>
 
         <div className="flex justify-between items-center">
+          {" "}
           <div className="font-mono text-sm text-neon-cyan/80">
             <span className="text-neon-green">[ACTIVE]</span> {flights.length}{" "}
             OF {pagination?.totalCount || 0} FLIGHTS_LOADED
+            <div className="flex items-center space-x-2 mt-1">
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  isConnected ? "bg-neon-green animate-pulse" : "bg-red-500"
+                }`}
+              ></div>
+              <span className="text-xs">
+                NEURAL_LINK: {isConnected ? "ACTIVE" : "SEVERED"} (
+                {connectionState})
+              </span>
+            </div>
           </div>
           <div className="flex space-x-3">
             <button
