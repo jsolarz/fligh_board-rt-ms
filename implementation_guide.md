@@ -10,27 +10,27 @@
 
 ### 2. Backend Development
 #### API Endpoints
-- [ ] Implement `GET /api/flights`.
-- [ ] Implement `POST /api/flights` with validation.
-- [ ] Implement `DELETE /api/flights/{id}`.
-- [ ] Implement `GET /api/flights/search` with query parameters.
+- [ ] Implement `GET /api/flights` to retrieve the current list of flights.
+- [ ] Implement `POST /api/flights` to add a new flight after validating the input.
+- [ ] Implement `DELETE /api/flights/{id}` to remove a flight after confirmation.
+- [ ] Implement `GET /api/flights/search` to retrieve flights based on search criteria.
 
 #### Business Logic
-- [ ] Add server-side status calculation logic.
-- [ ] Implement Clean Architecture layers (Domain, Application, Infrastructure, API).
+- [ ] Add logic to calculate and update flight statuses dynamically.
+- [ ] Ensure the backend supports real-time updates for all users.
 
 ### 3. Frontend Development
 #### Real-Time Flight Board
-- [ ] Create a table to display flights.
-- [ ] Integrate SignalR for live updates.
+- [ ] Display the flight board with the current status of flights.
+- [ ] Ensure the flight board updates dynamically in real-time.
 
 #### Flight Management
-- [ ] Add a form to create new flights with validation.
-- [ ] Add delete functionality for flights.
+- [ ] Provide a form for users to add new flights with validation.
+- [ ] Allow users to delete flights with confirmation.
 
 #### Filtering and Searching
-- [ ] Add UI for filtering flights by status and destination.
-- [ ] Implement search functionality.
+- [ ] Enable users to specify search criteria to find specific flights.
+- [ ] Display flights matching the search criteria.
 
 ### 4. State Management
 - [ ] Use TanStack Query for server state management.
