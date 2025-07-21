@@ -13,13 +13,14 @@ namespace FlightBoard.Api.Services;
 public class FlightService
 {
     private readonly FlightDbContext _context;
-    private readonly ILogger<FlightService> _logger;    private readonly IHubContext<FlightHub> _flightHub;
+    private readonly ILogger<FlightService> _logger; private readonly IHubContext<FlightHub> _flightHub;
 
     public FlightService(FlightDbContext context, ILogger<FlightService> logger, IHubContext<FlightHub> flightHub)
     {
         _context = context;
         _logger = logger;
-        _flightHub = flightHub;    }
+        _flightHub = flightHub;
+    }
 
     /// <summary>
     /// Calculate flight status based on scheduled departure time and current time
@@ -101,7 +102,7 @@ public class FlightService
             .ToListAsync();
 
         // Convert to DTOs with calculated status
-        var flightDtos = FlightMappingService.ToDto(flights, flight => 
+        var flightDtos = FlightMappingService.ToDto(flights, flight =>
             CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture));
 
         return new PagedResponse<FlightDto>
@@ -112,13 +113,13 @@ public class FlightService
             TotalCount = totalCount
         };
     }    /// <summary>
-    /// Get flight by ID
-    /// </summary>
+         /// Get flight by ID
+         /// </summary>
     public async Task<FlightDto?> GetFlightByIdAsync(int id)
     {
         var flight = await _context.Flights.FindAsync(id);
         if (flight == null) return null;
-        
+
         // Calculate real-time status
         var calculatedStatus = CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture);
         return FlightMappingService.ToDto(flight, calculatedStatus);
@@ -132,7 +133,7 @@ public class FlightService
         // Validate flight data
         await ValidateFlightDataAsync(createDto);
 
-        var flight = FlightMappingService.ToEntity(createDto); _context.Flights.Add(flight);        await _context.SaveChangesAsync();
+        var flight = FlightMappingService.ToEntity(createDto); _context.Flights.Add(flight); await _context.SaveChangesAsync();
 
         _logger.LogInformation("Created new flight {FlightNumber} with ID {Id}", flight.FlightNumber, flight.Id);
 
@@ -160,7 +161,7 @@ public class FlightService
     {
         var flight = await _context.Flights.FindAsync(id);
         if (flight == null)
-            return null;        var originalFlightNumber = flight.FlightNumber; 
+            return null; var originalFlightNumber = flight.FlightNumber;
         FlightMappingService.UpdateEntity(flight, updateDto);
 
         await _context.SaveChangesAsync();
@@ -200,8 +201,8 @@ public class FlightService
 
         return true;
     }    /// <summary>
-    /// Get flights by type (Departure or Arrival) with server-side status calculation
-    /// </summary>
+         /// Get flights by type (Departure or Arrival) with server-side status calculation
+         /// </summary>
     public async Task<PagedResponse<FlightDto>> GetFlightsByTypeAsync(FlightType type, int page = 1, int pageSize = 20)
     {
         var query = _context.Flights.Where(f => f.Type == type);
@@ -215,7 +216,7 @@ public class FlightService
             .ToListAsync();
 
         // Convert to DTOs with calculated status
-        var flightDtos = FlightMappingService.ToDto(flights, flight => 
+        var flightDtos = FlightMappingService.ToDto(flights, flight =>
             CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture));
 
         return new PagedResponse<FlightDto>
@@ -232,13 +233,13 @@ public class FlightService
     /// </summary>
     public async Task<IEnumerable<FlightDto>> GetActiveFlightsAsync()
     {
-        var activeStatuses = new[] { FlightStatus.Scheduled, FlightStatus.Delayed, FlightStatus.Boarding, FlightStatus.Departed, FlightStatus.InFlight, FlightStatus.Landed };        var flights = await _context.Flights
+        var activeStatuses = new[] { FlightStatus.Scheduled, FlightStatus.Delayed, FlightStatus.Boarding, FlightStatus.Departed, FlightStatus.InFlight, FlightStatus.Landed }; var flights = await _context.Flights
             .Where(f => activeStatuses.Contains(f.Status))
             .OrderBy(f => f.ScheduledDeparture)
             .ToListAsync();
 
         // Convert to DTOs with calculated status
-        return FlightMappingService.ToDto(flights, flight => 
+        return FlightMappingService.ToDto(flights, flight =>
             CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture));
     }
 
@@ -253,7 +254,7 @@ public class FlightService
             .ToListAsync();
 
         // Convert to DTOs with calculated status
-        return FlightMappingService.ToDto(flights, flight => 
+        return FlightMappingService.ToDto(flights, flight =>
             CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture));
     }
 
@@ -283,7 +284,7 @@ public class FlightService
                 flight.ActualArrival = now;
                 break;
         }
-        await _context.SaveChangesAsync();        _logger.LogInformation("Updated flight {FlightNumber} status from {OldStatus} to {NewStatus}",
+        await _context.SaveChangesAsync(); _logger.LogInformation("Updated flight {FlightNumber} status from {OldStatus} to {NewStatus}",
             flight.FlightNumber, oldStatus, status);
 
         // Calculate real-time status (may override manual status with time-based calculation)

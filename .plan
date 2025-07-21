@@ -728,8 +728,41 @@ FlightBoard.Tests/
 
 *Last updated: July 21, 2025 - Starting alignment fixes before Step 7*
 
-## CURRENT SESSION: ALIGNMENT FIXES IN PROGRESS
+## CURRENT SESSION: ALIGNMENT FIXES COMPLETED ✅
 
 **Session Goal:** Fix critical alignment gaps (Tasks 1-3) before proceeding to Step 7  
-**ETA:** 1.5 hours total for all alignment fixes  
-**Status:** STARTING Task 1 - Server-Side Status Calculation
+**STATUS:** COMPLETED ✅ - All critical alignment tasks implemented  
+**Next:** Ready to proceed with Step 7 (Search and Filtering)
+
+### ✅ ALIGNMENT TASK 1: Server-Side Status Calculation - COMPLETED
+**What was implemented:**
+- Added `CalculateFlightStatus()` method to FlightService with time-based business rules
+- **Business Logic:** Boarding (30min before), Departed (0-60min after), Landed (60min+ after), Scheduled (30min+ before)
+- Updated all service methods (GetFlightsAsync, GetFlightByIdAsync, CreateFlightAsync, UpdateFlightAsync, etc.)
+- Enhanced FlightMappingService with calculated status overloads
+- **Impact:** HIGH ✅ - Core requirement now satisfied, all status displays use server-side calculation
+
+### ✅ ALIGNMENT TASK 2: Search/Filter API Endpoint - COMPLETED  
+**What was implemented:**
+- Added `GET /api/flights/search` endpoint to FlightsController
+- **Parameters:** `?status={status}&destination={destination}&page={page}&pageSize={pageSize}`
+- Combined filtering by status and/or destination with pagination
+- Uses existing FlightService.GetFlightsAsync with FlightSearchDto
+- **Impact:** HIGH ✅ - Required endpoint for Step 7 now available
+
+### ✅ ALIGNMENT TASK 3: Future Date Validation - COMPLETED
+**What was implemented:**
+- Created `FutureDateAttribute` custom validation attribute
+- Applied to `ScheduledDeparture` field in `CreateFlightDto`
+- Validates that departure time must be in the future
+- Custom error message: "Scheduled departure must be in the future"
+- **Impact:** LOW ✅ - Business rule validation now enforced
+
+**Technical Changes Made:**
+- **FlightService.cs:** Added status calculation method, updated all CRUD methods
+- **FlightMappingService.cs:** Enhanced with calculatedStatus parameter overloads  
+- **FlightsController.cs:** Added search endpoint with proper error handling
+- **FlightDtos.cs:** Added FutureDate validation attribute
+- **New:** FutureDateAttribute.cs custom validation class
+- **Build Status:** ✅ Compiles successfully
+- **API Status:** ✅ Ready for testing

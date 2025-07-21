@@ -8,15 +8,15 @@ namespace FlightBoard.Api.Services;
 /// </summary>
 public class FlightMappingService
 {    /// <summary>
-    /// Map Flight entity to FlightDto using modern C# record syntax
-    /// </summary>
-    /// <param name="flight">Flight entity</param>
-    /// <param name="calculatedStatus">Server-calculated status (optional)</param>
+     /// Map Flight entity to FlightDto using modern C# record syntax
+     /// </summary>
+     /// <param name="flight">Flight entity</param>
+     /// <param name="calculatedStatus">Server-calculated status (optional)</param>
     public static FlightDto ToDto(Flight flight, FlightStatus? calculatedStatus = null)
     {
         // Use calculated status if provided, otherwise use stored status
         var status = calculatedStatus?.ToString() ?? flight.Status.ToString();
-        
+
         return new FlightDto
         {
             Id = flight.Id,
@@ -42,8 +42,8 @@ public class FlightMappingService
             EstimatedArrival = flight.EstimatedArrival
         };
     }    /// <summary>
-    /// Map collection of Flight entities to FlightDto collection
-    /// </summary>
+         /// Map collection of Flight entities to FlightDto collection
+         /// </summary>
     public static IEnumerable<FlightDto> ToDto(IEnumerable<Flight> flights)
     {
         return flights.Select(flight => ToDto(flight));

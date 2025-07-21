@@ -286,7 +286,7 @@ public class FlightsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error searching flights with status: {Status}, destination: {Destination}", 
+            _logger.LogError(ex, "Error searching flights with status: {Status}, destination: {Destination}",
                 status, destination);
             return StatusCode(500, "An error occurred while searching flights");
         }

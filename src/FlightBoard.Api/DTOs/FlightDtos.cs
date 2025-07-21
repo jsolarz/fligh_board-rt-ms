@@ -52,7 +52,8 @@ public sealed record CreateFlightDto
 
     [Required(ErrorMessage = "Destination airport is required")]
     [StringLength(3, MinimumLength = 3, ErrorMessage = "Destination must be 3 characters")]
-    public required string Destination { get; init; }    [Required(ErrorMessage = "Scheduled departure is required")]
+    public required string Destination { get; init; }
+    [Required(ErrorMessage = "Scheduled departure is required")]
     [FutureDate(ErrorMessage = "Scheduled departure must be in the future")]
     public required DateTime ScheduledDeparture { get; init; }
 
