@@ -8,8 +8,8 @@ namespace FlightBoard.Api.Services;
 /// </summary>
 public class FlightMappingService
 {    /// <summary>
-    /// Map Flight entity to FlightDto using modern C# record syntax
-    /// </summary>
+     /// Map Flight entity to FlightDto using modern C# record syntax
+     /// </summary>
     public static FlightDto ToDto(Flight flight)
     {
         return new FlightDto
@@ -119,8 +119,8 @@ public class FlightMappingService
         if (!string.IsNullOrEmpty(dto.Type))
             flight.Type = Enum.Parse<FlightType>(dto.Type);
     }    /// <summary>
-    /// Create a paginated response with modern record syntax
-    /// </summary>
+         /// Create a paginated response with modern record syntax
+         /// </summary>
     public static PagedResponse<FlightDto> ToPagedResponse(IEnumerable<Flight> flights, int page, int pageSize, int totalCount)
     {
         return new PagedResponse<FlightDto>
