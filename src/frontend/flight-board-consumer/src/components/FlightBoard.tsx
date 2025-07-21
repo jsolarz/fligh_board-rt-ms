@@ -53,13 +53,13 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
       // Use search endpoint if any filters are active (beyond basic pagination and type)
       const hasFilters = Boolean(
         searchParams.flightNumber ||
-        searchParams.destination ||
-        searchParams.status ||
-        searchParams.airline ||
-        searchParams.origin ||
-        searchParams.isDelayed ||
-        searchParams.fromDate ||
-        searchParams.toDate
+          searchParams.destination ||
+          searchParams.status ||
+          searchParams.airline ||
+          searchParams.origin ||
+          searchParams.isDelayed ||
+          searchParams.fromDate ||
+          searchParams.toDate
       )
 
       if (hasFilters) {
@@ -139,14 +139,12 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
           </div>
         </div>
       </div>
-
       {/* Search and Filter Interface */}
       <SearchFilters
         searchParams={searchParams}
         onSearchChange={handleSearchChange}
         isLoading={isLoading}
       />
-
       {/* Flight Table */}
       <div className="holographic rounded-lg overflow-hidden border border-neon-cyan/30">
         <div className="overflow-x-auto">
@@ -233,7 +231,6 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
           </table>
         </div>
       </div>
-
       {/* Empty State */}
       {flights.length === 0 && (
         <div className="text-center py-12">
@@ -244,7 +241,8 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
             NEURAL_LINK_SEARCHING...
           </div>
         </div>
-      )}      {/* Pagination */}
+      )}{" "}
+      {/* Pagination */}
       {pagination && (
         <Pagination
           currentPage={pagination.page}
