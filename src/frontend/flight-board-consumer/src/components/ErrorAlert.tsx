@@ -33,7 +33,9 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
   }
 
   return (
-    <div className={`holographic border rounded-lg p-6 ${typeClasses[type]} animate-slide-in`}>
+    <div
+      className={`holographic border rounded-lg p-6 ${typeClasses[type]} animate-slide-in`}
+    >
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0">
           {type === "error" && (
@@ -88,21 +90,25 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
 
         <div className="flex-1 space-y-3">
           <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${textClasses[type]} animate-pulse`}></div>
-            <h3 className={`text-lg font-mono font-bold uppercase tracking-wider ${textClasses[type]} neon-text`}>
+            <div
+              className={`w-2 h-2 rounded-full ${textClasses[type]} animate-pulse`}
+            ></div>
+            <h3
+              className={`text-lg font-mono font-bold uppercase tracking-wider ${textClasses[type]} neon-text`}
+            >
               {type === "error" && "SYSTEM_ERROR_DETECTED"}
               {type === "warning" && "WARNING_PROTOCOL_ACTIVE"}
               {type === "info" && "NEURAL_NOTIFICATION"}
             </h3>
           </div>
 
-          <div className={`font-mono text-sm ${textClasses[type]} leading-relaxed`}>
+          <div
+            className={`font-mono text-sm ${textClasses[type]} leading-relaxed`}
+          >
             <div className="mb-2 text-xs uppercase tracking-wider opacity-80">
               ERROR_MSG:
             </div>
-            <div className="pl-4 border-l-2 border-current/30">
-              {message}
-            </div>
+            <div className="pl-4 border-l-2 border-current/30">{message}</div>
           </div>
 
           {onRetry && (
@@ -124,53 +130,6 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
 
       {/* Scanline effect */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-current/5 to-transparent opacity-30 animate-scanlines pointer-events-none"></div>
-    </div>
-  )
-}
-
-export default ErrorAlert
-              <path
-                fillRule="evenodd"
-                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
-          {type === "info" && (
-            <svg
-              className={`h-5 w-5 ${iconClasses[type]}`}
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
-        </div>
-        <div className="ml-3 flex-1">
-          <h3 className="text-sm font-medium">
-            {type === "error" && "Error"}
-            {type === "warning" && "Warning"}
-            {type === "info" && "Information"}
-          </h3>
-          <div className="mt-2 text-sm">
-            <p>{message}</p>
-          </div>
-          {onRetry && (
-            <div className="mt-4">
-              <button
-                onClick={onRetry}
-                className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Try Again
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   )
 }

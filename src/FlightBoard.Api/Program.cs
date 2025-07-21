@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FlightBoard.Api.Data;
 using FlightBoard.Api.Services;
+using FlightBoard.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,9 @@ builder.Services.AddScoped<FlightService>();
 
 // Add API controllers
 builder.Services.AddControllers();
+
+// Add SignalR
+builder.Services.AddSignalR();
 
 // Add CORS for frontend applications
 builder.Services.AddCors(options =>
@@ -65,6 +69,9 @@ app.UseHttpsRedirection();
 
 // Map API controllers
 app.MapControllers();
+
+// Map SignalR hub
+app.MapHub<FlightHub>("/flighthub");
 
 var summaries = new[]
 {
