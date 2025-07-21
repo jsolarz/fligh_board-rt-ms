@@ -254,6 +254,41 @@ public class FlightsController : ControllerBase
             return StatusCode(500, "An error occurred while updating flight status");
         }
     }
-}
 
-// UpdateStatusRequest is now defined in FlightDtos.cs as a modern record
+    /// <summary>
+    /// Search flights by status and/or destination (required by objectives.md)
+    /// </summary>
+    /// <param name="status">Filter by flight status (optional)</param>
+    /// <param name="destination">Filter by destination airport code (optional)</param>
+    /// <param name="page">Page number for pagination (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 10)</param>
+    /// <returns>Paginated and filtered list of flights</returns>
+    [HttpGet("search")]
+    public async Task<ActionResult<PagedResponse<FlightDto>>> SearchFlights(
+        [FromQuery] string? status = null,
+        [FromQuery] string? destination = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        try
+        {
+            // Create search DTO with filter parameters
+            var searchDto = new FlightSearchDto
+            {
+                Status = status,
+                Destination = destination,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            var result = await _flightService.GetFlightsAsync(searchDto);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching flights with status: {Status}, destination: {Destination}", 
+                status, destination);
+            return StatusCode(500, "An error occurred while searching flights");
+        }
+    }
+}

@@ -8,10 +8,15 @@ namespace FlightBoard.Api.Services;
 /// </summary>
 public class FlightMappingService
 {    /// <summary>
-     /// Map Flight entity to FlightDto using modern C# record syntax
-     /// </summary>
-    public static FlightDto ToDto(Flight flight)
+    /// Map Flight entity to FlightDto using modern C# record syntax
+    /// </summary>
+    /// <param name="flight">Flight entity</param>
+    /// <param name="calculatedStatus">Server-calculated status (optional)</param>
+    public static FlightDto ToDto(Flight flight, FlightStatus? calculatedStatus = null)
     {
+        // Use calculated status if provided, otherwise use stored status
+        var status = calculatedStatus?.ToString() ?? flight.Status.ToString();
+        
         return new FlightDto
         {
             Id = flight.Id,
@@ -23,7 +28,7 @@ public class FlightMappingService
             ActualDeparture = flight.ActualDeparture,
             ScheduledArrival = flight.ScheduledArrival,
             ActualArrival = flight.ActualArrival,
-            Status = flight.Status.ToString(),
+            Status = status,
             Gate = flight.Gate,
             Terminal = flight.Terminal,
             AircraftType = flight.AircraftType,
@@ -36,14 +41,20 @@ public class FlightMappingService
             EstimatedDeparture = flight.EstimatedDeparture,
             EstimatedArrival = flight.EstimatedArrival
         };
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Map collection of Flight entities to FlightDto collection
     /// </summary>
     public static IEnumerable<FlightDto> ToDto(IEnumerable<Flight> flights)
     {
-        return flights.Select(ToDto);
+        return flights.Select(flight => ToDto(flight));
+    }
+
+    /// <summary>
+    /// Map collection of Flight entities to FlightDto collection with calculated status
+    /// </summary>
+    public static IEnumerable<FlightDto> ToDto(IEnumerable<Flight> flights, Func<Flight, FlightStatus> statusCalculator)
+    {
+        return flights.Select(flight => ToDto(flight, statusCalculator(flight)));
     }
 
     /// <summary>
