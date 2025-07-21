@@ -1,0 +1,90 @@
+# DEVELOPMENT RULES - MANDATORY ADHERENCE
+
+## 🚨 CARDINAL RULES - NO EXCEPTIONS
+
+### RULE #1: SMALL ITERATIVE CHANGES ONLY
+- ❌ **NEVER** change multiple files in one action
+- ✅ **ALWAYS** make ONE small change at a time
+- ✅ **ALWAYS** focus on a single component/file/function
+- ✅ **MAXIMUM** 1-2 files per change, only when absolutely necessary
+
+### RULE #2: COMMIT FREQUENTLY
+- ✅ Commit after EVERY small change
+- ✅ Use descriptive commit messages
+- ✅ Show progress with each commit
+- ❌ **NEVER** accumulate multiple changes without commits
+
+### RULE #3: UPDATE DOCUMENTATION CONSTANTLY
+- ✅ Update .plan file after every change
+- ✅ Cross-reference against objectives.md
+- ✅ Check against software_design_document.md
+- ✅ Verify alignment with implementation_guide.md
+
+### RULE #4: VERIFY AGAINST REQUIREMENTS
+- ✅ Check docs/objectives.md before every change
+- ✅ Validate against use_cases.md
+- ✅ Ensure alignment with SDD requirements
+- ✅ Follow the implementation guide steps
+
+### RULE #5: FOLLOW INSTRUCTIONS PRECISELY
+- ✅ Read user instructions completely
+- ✅ Ask for clarification if unclear
+- ✅ Follow the specified approach exactly
+- ❌ **NEVER** deviate from explicit instructions
+
+## 🎯 WORKFLOW CHECKLIST
+
+Before making ANY change:
+1. [ ] Read current .plan status
+2. [ ] Check which step we're on
+3. [ ] Identify the SINGLE small change needed
+4. [ ] Verify against objectives.md
+5. [ ] Make ONE small change only
+6. [ ] Test/verify the change
+7. [ ] Commit the change
+8. [ ] Update .plan with progress
+9. [ ] Check if step is complete
+
+## 📋 MANDATORY CHECKS
+
+### Before Each Action:
+- [ ] Is this a SMALL change?
+- [ ] Am I changing only 1-2 files MAX?
+- [ ] Do I understand what step we're on?
+- [ ] Have I checked the requirements?
+- [ ] Will I commit after this change?
+
+### After Each Action:
+- [ ] Did I update .plan?
+- [ ] Did I commit the change?
+- [ ] Is the change working?
+- [ ] What's the next SINGLE small step?
+
+## 🚨 WARNING SIGNALS
+
+If I'm about to:
+- Change more than 2 files → STOP
+- Make a "big" change → STOP
+- Skip documentation → STOP
+- Skip commits → STOP
+- Ignore instructions → STOP
+
+## 📖 REFERENCE FILES TO CHECK
+
+Always reference these files:
+- `.plan` - Current status and progress
+- `docs/objectives.md` - Core requirements
+- `docs/software_design_document.md` - Architecture
+- `docs/implementation_guide.md` - Step-by-step process
+- `docs/use_cases.md` - Functional requirements
+
+## 🎯 CURRENT FOCUS
+
+**STEP 8: Redux Toolkit Integration**
+- Status: Manual edits made, need to verify completion
+- Next: Single small verification step
+- Approach: One small check at a time
+
+---
+
+**REMEMBER: SMALL STEPS, FREQUENT COMMITS, CONSTANT DOCUMENTATION**
