@@ -5,6 +5,25 @@ This project follows the iDesign Method for system design and development. The f
 
 ## Guidelines for Copilot
 
+**IMPORTANT:** When working on this project, always:
+
+1. **Reference this file first** - Check current development status, completed steps, and what's next
+2. **Update this file with each change** - Keep the progress log current with new completions
+3. **Update the .plan file** - Maintain the development journal with technical details
+4. **Follow validation criteria** - Ensure each step meets its requirements before proceeding
+5. **Maintain coding standards** - Follow the established patterns and principles
+
+**Before starting any work:**
+- Read the "Current Development Status" section
+- Check the "Next Up" section for current objectives
+- Review "Technical Debt Tracker" for things to avoid
+
+**After completing any work:**
+- Update completion status in this file
+- Add new commit reference
+- Update performance metrics if applicable
+- Note any lessons learned or challenges encountered
+
 ### The Prime Directive
 **Never design against the requirements.**
 
@@ -130,4 +149,5 @@ g. Always go through SDP review before the main work starts.
    - Add animations for frontend interactions.
    - Implement structured logging in the backend.
    - Provide Docker support for easy deployment.
+
 
