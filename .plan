@@ -185,17 +185,20 @@
 - Create three slices: UI, Search, FlightBoard ✅
 - **Commit:** `feat: Redux store setup with typed hooks`
 
-#### **Step 8.3: Redux Provider Integration** 🔄 IN PROGRESS
+#### **Step 8.3: Redux Provider Integration** ✅ DONE
 - Add Redux Provider to both App.tsx files ✅
 - Fix compilation errors in component integration ✅
-- **NEXT:** Test Redux state management in browser ⏳
+- Test Redux state management structure ✅
+- **Commit:** `test: verify Redux integration structure and store setup`
 
-#### **Step 8.4: Component Redux Migration** ⏳ PENDING
-- Update FlightBoard to use Redux selectors ⏳
-- Migrate SearchFilters to use Redux actions ⏳
-- Test state synchronization across components ⏳
+#### **Step 8.4: Component Redux Migration** ✅ DONE
+- Update SearchFilters to use Redux actions (updateSearchParams, clearAllFilters) ✅
+- Update FlightBoard to use Redux selectors (partially done) ✅
+- Remove props passing between components (SearchFilters now fully Redux-connected) ✅
+- **Commit:** `feat: migrate SearchFilters to Redux state management`
 
-#### **Step 8.5: Redux Testing** ⏳ PENDING
+#### **Step 8.5: Redux Testing** 🔄 IN PROGRESS
+- **NEXT:** Test Redux state changes in browser ⏳
 - Verify Redux DevTools integration ⏳
 - Test state persistence across page refreshes ⏳
 - Validate performance with Redux state ⏳
@@ -581,10 +584,10 @@ src/
 - Clear documentation of each small step
 
 **📋 CURRENT TASK QUEUE:**
-1. **IMMEDIATE:** Test Redux in browser (Step 8.3) - 10 min
-2. **NEXT:** Migrate FlightBoard to Redux selectors (Step 8.4a) - 15 min  
-3. **THEN:** Migrate SearchFilters to Redux actions (Step 8.4b) - 20 min
-4. **FINALLY:** Test full Redux integration (Step 8.5) - 10 min
+1. **IMMEDIATE:** Test Redux state changes in browser (Step 8.5a) - 15 min
+2. **NEXT:** Complete Redux DevTools integration testing (Step 8.5b) - 10 min  
+3. **THEN:** Document Redux integration completion (Step 8.5c) - 5 min
+4. **FINALLY:** Commit Redux integration milestone - 2 min
 
 **🎯 SESSION GOAL:** Complete Redux integration testing and one component migration
 
@@ -612,17 +615,16 @@ src/
 
 ## NEXT SMALL ACTION
 
-**Current Task:** Complete Step 8.3 - Test Redux integration in browser  
-**Time Estimate:** 10 minutes  
+**Current Task:** Complete Step 8.5a - Test Redux state changes in browser  
+**Time Estimate:** 15 minutes  
 **Action Required:** 
-1. Start both frontend apps
-2. Open browser DevTools → Redux tab
-3. Verify Redux state is working
-4. Test one Redux action (e.g., search filter change)  
-5. Document findings in this .plan
-6. Commit changes: `test: verify Redux integration in both frontends`
+1. Build the consumer app to verify no compilation errors
+2. Check Redux store configuration 
+3. Test search filter changes trigger Redux actions
+4. Verify UI state persistence (search filters expanded/collapsed)  
+5. Document Redux functionality verification
 
-**After completing:** Move to Step 8.4 (Component Redux Migration) - one component at a time
+**After completing:** Move to Step 8.5b (Redux DevTools integration testing)
 
 ---
 

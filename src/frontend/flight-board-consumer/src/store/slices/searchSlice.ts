@@ -245,6 +245,12 @@ const searchSlice = createSlice({
 
     setSortOrder: (state, action: PayloadAction<SearchState["sortOrder"]>) => {
       state.sortOrder = action.payload
+    },    // Update search parameters (general purpose)
+    updateSearchParams: (state, action: PayloadAction<Partial<FlightSearchDto>>) => {
+      state.currentSearch = {
+        ...state.currentSearch,
+        ...action.payload,
+      }
     },
 
     // Clear all filters
@@ -270,6 +276,7 @@ const searchSlice = createSlice({
 
 export const {
   setSearchParams,
+  updateSearchParams,
   setFlightNumber,
   setDestination,
   setStatus,
