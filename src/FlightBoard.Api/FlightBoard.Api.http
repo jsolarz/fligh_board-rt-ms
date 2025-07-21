@@ -1,6 +1,78 @@
 @FlightBoard.Api_HostAddress = http://localhost:5183
 
-GET {{FlightBoard.Api_HostAddress}}/weatherforecast/
+### Get all flights
+GET {{FlightBoard.Api_HostAddress}}/api/flights
 Accept: application/json
 
-###
+### Get flights with pagination
+GET {{FlightBoard.Api_HostAddress}}/api/flights?page=1&pageSize=10
+Accept: application/json
+
+### Get departures
+GET {{FlightBoard.Api_HostAddress}}/api/flights/departures
+Accept: application/json
+
+### Get arrivals
+GET {{FlightBoard.Api_HostAddress}}/api/flights/arrivals
+Accept: application/json
+
+### Get active flights
+GET {{FlightBoard.Api_HostAddress}}/api/flights/active
+Accept: application/json
+
+### Get delayed flights
+GET {{FlightBoard.Api_HostAddress}}/api/flights/delayed
+Accept: application/json
+
+### Get flight by ID
+GET {{FlightBoard.Api_HostAddress}}/api/flights/1
+Accept: application/json
+
+### Search flights by airline
+GET {{FlightBoard.Api_HostAddress}}/api/flights?airline=AA
+Accept: application/json
+
+### Search flights by origin
+GET {{FlightBoard.Api_HostAddress}}/api/flights?origin=JFK
+Accept: application/json
+
+### Create new flight
+POST {{FlightBoard.Api_HostAddress}}/api/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "TEST123",
+  "airline": "TS",
+  "origin": "JFK",
+  "destination": "LAX",
+  "scheduledDeparture": "2025-07-22T10:00:00Z",
+  "scheduledArrival": "2025-07-22T13:30:00Z",
+  "status": "Scheduled",
+  "gate": "A15",
+  "terminal": "Terminal 1",
+  "aircraftType": "Boeing 737",
+  "type": "Departure"
+}
+
+### Update flight status
+PATCH {{FlightBoard.Api_HostAddress}}/api/flights/1/status
+Content-Type: application/json
+
+{
+  "status": "Boarding",
+  "remarks": "Now boarding all passengers"
+}
+
+### Update flight details
+PUT {{FlightBoard.Api_HostAddress}}/api/flights/1
+Content-Type: application/json
+
+{
+  "gate": "B20",
+  "remarks": "Gate changed",
+  "delayMinutes": 30
+}
+
+### Weather forecast (legacy endpoint)
+GET {{FlightBoard.Api_HostAddress}}/weatherforecast/
+Accept: application/json
