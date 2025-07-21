@@ -1,7 +1,7 @@
 // React Query client configuration
 // Provides global query configuration and client setup
 
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from "@tanstack/react-query"
 
 // Create and configure the React Query client
 export const queryClient = new QueryClient({
@@ -12,10 +12,10 @@ export const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime in v4)
       retry: (failureCount, error) => {
         // Retry logic: don't retry for 4xx errors
-        if (error instanceof Error && error.message.includes('404')) {
-          return false;
+        if (error instanceof Error && error.message.includes("404")) {
+          return false
         }
-        return failureCount < 3;
+        return failureCount < 3
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false, // Disable refetch on window focus for demo
@@ -26,6 +26,6 @@ export const queryClient = new QueryClient({
       retry: 1,
     },
   },
-});
+})
 
-export default queryClient;
+export default queryClient

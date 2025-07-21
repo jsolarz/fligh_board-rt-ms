@@ -1,30 +1,33 @@
 // FlightBoard component - Main flight display component
 // Uses React Query for data fetching and state management
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { FlightApiService, handleApiError } from '../services/flight-api.service';
-import { FlightDto, FlightSearchDto, FlightType } from '../types/flight.types';
-import LoadingSpinner from './LoadingSpinner';
-import ErrorAlert from './ErrorAlert';
+import React, { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import {
+  FlightApiService,
+  handleApiError,
+} from "../services/flight-api.service"
+import { FlightDto, FlightSearchDto, FlightType } from "../types/flight.types"
+import LoadingSpinner from "./LoadingSpinner"
+import ErrorAlert from "./ErrorAlert"
 
 interface FlightBoardProps {
-  title?: string;
-  flightType?: FlightType;
-  refreshInterval?: number; // milliseconds
+  title?: string
+  flightType?: FlightType
+  refreshInterval?: number // milliseconds
 }
 
-const FlightBoard: React.FC<FlightBoardProps> = ({ 
-  title = 'Flight Board',
+const FlightBoard: React.FC<FlightBoardProps> = ({
+  title = "Flight Board",
   flightType,
-  refreshInterval = 30000 // 30 seconds
+  refreshInterval = 30000, // 30 seconds
 }) => {
   // Search state
   const [searchParams, setSearchParams] = useState<FlightSearchDto>({
     page: 1,
     pageSize: 20,
-    type: flightType
-  });
+    type: flightType,
+  })
 
   // React Query for data fetching
   const {
@@ -32,90 +35,87 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
     isLoading,
     error,
     isError,
-    refetch
+    refetch,
   } = useQuery({
-    queryKey: ['flights', searchParams],
+    queryKey: ["flights", searchParams],
     queryFn: () => {
       // Choose API endpoint based on flight type
       if (flightType === FlightType.Departure) {
-        return FlightApiService.getDepartures(searchParams);
+        return FlightApiService.getDepartures(searchParams)
       } else if (flightType === FlightType.Arrival) {
-        return FlightApiService.getArrivals(searchParams);
+        return FlightApiService.getArrivals(searchParams)
       } else {
-        return FlightApiService.getFlights(searchParams);
+        return FlightApiService.getFlights(searchParams)
       }
     },
     refetchInterval: refreshInterval,
     staleTime: 10000, // Data considered fresh for 10 seconds
     retry: 3,
-  });
+  })
 
   // Format time for display
   const formatTime = (dateString: string): string => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  };
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+  }
 
   // Format date for display
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
+  }
 
   // Get status badge styling
   const getStatusBadge = (status: string, isDelayed: boolean) => {
-    const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium';
-    
+    const baseClasses = "px-2 py-1 rounded-full text-xs font-medium"
+
     if (isDelayed) {
-      return `${baseClasses} bg-red-100 text-red-800`;
+      return `${baseClasses} bg-red-100 text-red-800`
     }
-    
+
     switch (status) {
-      case 'Scheduled':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
-      case 'Boarding':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
-      case 'Departed':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'Arrived':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'Cancelled':
-        return `${baseClasses} bg-red-100 text-red-800`;
+      case "Scheduled":
+        return `${baseClasses} bg-blue-100 text-blue-800`
+      case "Boarding":
+        return `${baseClasses} bg-yellow-100 text-yellow-800`
+      case "Departed":
+        return `${baseClasses} bg-green-100 text-green-800`
+      case "Arrived":
+        return `${baseClasses} bg-green-100 text-green-800`
+      case "Cancelled":
+        return `${baseClasses} bg-red-100 text-red-800`
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
+        return `${baseClasses} bg-gray-100 text-gray-800`
     }
-  };
+  }
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
-    setSearchParams(prev => ({ ...prev, page: newPage }));
-  };
+    setSearchParams((prev) => ({ ...prev, page: newPage }))
+  }
 
   // Handle search
   const handleSearch = (newSearchParams: Partial<FlightSearchDto>) => {
-    setSearchParams(prev => ({ ...prev, ...newSearchParams, page: 1 }));
-  };
+    setSearchParams((prev) => ({ ...prev, ...newSearchParams, page: 1 }))
+  }
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading flights..." />;
+    return <LoadingSpinner message="Loading flights..." />
   }
 
   if (isError) {
     return (
-      <ErrorAlert 
-        message={handleApiError(error)}
-        onRetry={() => refetch()}
-      />
-    );
+      <ErrorAlert message={handleApiError(error)} onRetry={() => refetch()} />
+    )
   }
 
-  const flights = flightsData?.data || [];
-  const pagination = flightsData;
+  const flights = flightsData?.data || []
+  const pagination = flightsData
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
@@ -186,15 +186,27 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {formatTime(flightType === FlightType.Arrival ? flight.scheduledArrival : flight.scheduledDeparture)}
+                      {formatTime(
+                        flightType === FlightType.Arrival
+                          ? flight.scheduledArrival
+                          : flight.scheduledDeparture
+                      )}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {formatDate(flightType === FlightType.Arrival ? flight.scheduledArrival : flight.scheduledDeparture)}
+                      {formatDate(
+                        flightType === FlightType.Arrival
+                          ? flight.scheduledArrival
+                          : flight.scheduledDeparture
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {formatTime(flightType === FlightType.Arrival ? flight.estimatedArrival : flight.estimatedDeparture)}
+                      {formatTime(
+                        flightType === FlightType.Arrival
+                          ? flight.estimatedArrival
+                          : flight.estimatedDeparture
+                      )}
                     </div>
                     {flight.isDelayed && (
                       <div className="text-sm text-red-600">
@@ -203,12 +215,17 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={getStatusBadge(flight.status, flight.isDelayed)}>
+                    <span
+                      className={getStatusBadge(
+                        flight.status,
+                        flight.isDelayed
+                      )}
+                    >
                       {flight.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {flight.gate || '-'}
+                    {flight.gate || "-"}
                     {flight.terminal && (
                       <div className="text-xs text-gray-500">
                         Terminal {flight.terminal}
@@ -216,7 +233,7 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {flight.aircraftType || '-'}
+                    {flight.aircraftType || "-"}
                   </td>
                 </tr>
               ))}
@@ -228,11 +245,25 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
         {flights.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No flights</h3>
-              <p className="mt-1 text-sm text-gray-500">No flights match your criteria.</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No flights
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                No flights match your criteria.
+              </p>
             </div>
           </div>
         )}
@@ -259,15 +290,27 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{((pagination.page - 1) * pagination.pageSize) + 1}</span> to{' '}
+                  Showing{" "}
                   <span className="font-medium">
-                    {Math.min(pagination.page * pagination.pageSize, pagination.totalCount)}
-                  </span>{' '}
-                  of <span className="font-medium">{pagination.totalCount}</span> results
+                    {(pagination.page - 1) * pagination.pageSize + 1}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-medium">
+                    {Math.min(
+                      pagination.page * pagination.pageSize,
+                      pagination.totalCount
+                    )}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium">{pagination.totalCount}</span>{" "}
+                  results
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={!pagination.hasPrevious}
@@ -275,27 +318,30 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
                   >
                     Previous
                   </button>
-                  
+
                   {/* Page numbers */}
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, pagination.page - 2) + i;
-                    if (pageNum > pagination.totalPages) return null;
-                    
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          pageNum === pagination.page
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  
+                  {Array.from(
+                    { length: Math.min(5, pagination.totalPages) },
+                    (_, i) => {
+                      const pageNum = Math.max(1, pagination.page - 2) + i
+                      if (pageNum > pagination.totalPages) return null
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            pageNum === pagination.page
+                              ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    }
+                  )}
+
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={!pagination.hasNext}
@@ -310,7 +356,7 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FlightBoard;
+export default FlightBoard
