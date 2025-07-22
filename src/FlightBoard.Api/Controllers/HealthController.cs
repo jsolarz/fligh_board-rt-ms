@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FlightBoard.Api.Data;
+using FlightBoard.Api.Models;
 using System.Reflection;
 
 namespace FlightBoard.Api.Controllers;
@@ -122,21 +123,27 @@ public class HealthController : ControllerBase
         }
     }
 
-    private async Task<object> CheckDatabaseHealth()
+    private async Task<HealthCheckResult> CheckDatabaseHealth()
     {
         try
         {
             var canConnect = await _context.Database.CanConnectAsync();
             if (!canConnect)
             {
-                return new { Status = "Unhealthy", IsHealthy = false, Error = "Cannot connect to database" };
+                return new HealthCheckResult
+                {
+                    Status = "Unhealthy",
+                    IsHealthy = false,
+                    Connected = false,
+                    Error = "Cannot connect to database"
+                };
             }
 
             // Check if we can query data
             var flightCount = await _context.Flights.CountAsync();
             var userCount = await _context.Users.CountAsync();
 
-            return new
+            return new HealthCheckResult
             {
                 Status = "Healthy",
                 IsHealthy = true,
@@ -148,10 +155,11 @@ public class HealthController : ControllerBase
         }
         catch (Exception ex)
         {
-            return new
+            return new HealthCheckResult
             {
                 Status = "Unhealthy",
                 IsHealthy = false,
+                Connected = false,
                 Error = ex.Message
             };
         }
