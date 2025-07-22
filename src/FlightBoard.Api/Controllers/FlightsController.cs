@@ -241,4 +241,64 @@ public class FlightsController : ControllerBase
             return StatusCode(500, "An error occurred while retrieving arrival flights");
         }
     }
+
+    /// <summary>
+    /// Get flights by departure date (optimized with caching)
+    /// </summary>
+    /// <param name="date">Departure date (YYYY-MM-DD format)</param>
+    /// <returns>List of flights departing on the specified date</returns>
+    [HttpGet("departures/{date:datetime}")]
+    public async Task<ActionResult<List<FlightDto>>> GetFlightsByDeparture(DateTime date)
+    {
+        try
+        {
+            var result = await _flightManager.GetFlightsByDepartureDateAsync(date);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving flights by departure date {Date}", date);
+            return StatusCode(500, "An error occurred while retrieving departure flights");
+        }
+    }
+
+    /// <summary>
+    /// Get flights by arrival date (optimized with caching)
+    /// </summary>
+    /// <param name="date">Arrival date (YYYY-MM-DD format)</param>
+    /// <returns>List of flights arriving on the specified date</returns>
+    [HttpGet("arrivals/{date:datetime}")]
+    public async Task<ActionResult<List<FlightDto>>> GetFlightsByArrival(DateTime date)
+    {
+        try
+        {
+            var result = await _flightManager.GetFlightsByArrivalDateAsync(date);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving flights by arrival date {Date}", date);
+            return StatusCode(500, "An error occurred while retrieving arrival flights");
+        }
+    }
+
+    /// <summary>
+    /// Get flights by status (optimized with caching)
+    /// </summary>
+    /// <param name="status">Flight status (scheduled, delayed, boarding, etc.)</param>
+    /// <returns>List of flights with the specified status</returns>
+    [HttpGet("status/{status}")]
+    public async Task<ActionResult<List<FlightDto>>> GetFlightsByStatus(string status)
+    {
+        try
+        {
+            var result = await _flightManager.GetFlightsByStatusAsync(status);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving flights by status {Status}", status);
+            return StatusCode(500, "An error occurred while retrieving flights by status");
+        }
+    }
 }

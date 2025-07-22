@@ -261,4 +261,61 @@ public class FlightManager : IFlightManager
             throw;
         }
     }
+
+    /// <summary>
+    /// Get flights by departure date (cached)
+    /// </summary>
+    public async Task<List<FlightDto>> GetFlightsByDepartureDateAsync(DateTime date)
+    {
+        try
+        {
+            _logger.LogInformation("Getting flights by departure date {Date}", date.ToString("yyyy-MM-dd"));
+
+            var flights = await _flightDataAccess.GetFlightsByDepartureDateAsync(date);
+            return flights.Select(_mappingUtility.MapToDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in FlightManager.GetFlightsByDepartureDateAsync for date {Date}", date);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get flights by arrival date (cached)
+    /// </summary>
+    public async Task<List<FlightDto>> GetFlightsByArrivalDateAsync(DateTime date)
+    {
+        try
+        {
+            _logger.LogInformation("Getting flights by arrival date {Date}", date.ToString("yyyy-MM-dd"));
+
+            var flights = await _flightDataAccess.GetFlightsByArrivalDateAsync(date);
+            return flights.Select(_mappingUtility.MapToDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in FlightManager.GetFlightsByArrivalDateAsync for date {Date}", date);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get flights by status (cached)
+    /// </summary>
+    public async Task<List<FlightDto>> GetFlightsByStatusAsync(string status)
+    {
+        try
+        {
+            _logger.LogInformation("Getting flights by status {Status}", status);
+
+            var flights = await _flightDataAccess.GetFlightsByStatusAsync(status);
+            return flights.Select(_mappingUtility.MapToDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in FlightManager.GetFlightsByStatusAsync for status {Status}", status);
+            throw;
+        }
+    }
 }

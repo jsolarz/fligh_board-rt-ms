@@ -20,4 +20,9 @@ public interface IFlightManager
 
     // Status Management - matches current implementation
     Task<FlightDto> UpdateFlightStatusAsync(int id, string status);
+    
+    // Performance-optimized cached queries
+    Task<List<FlightDto>> GetFlightsByDepartureDateAsync(DateTime date);
+    Task<List<FlightDto>> GetFlightsByArrivalDateAsync(DateTime date);
+    Task<List<FlightDto>> GetFlightsByStatusAsync(string status);
 }

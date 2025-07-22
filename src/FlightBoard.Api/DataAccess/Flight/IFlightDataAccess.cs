@@ -17,4 +17,9 @@ public interface IFlightDataAccess
     Task<int> GetTotalFlightsCountAsync(IQueryable<Models.Flight> query);
     Task<List<Models.Flight>> GetPagedFlightsAsync(IQueryable<Models.Flight> query, int page, int pageSize);
     Task SaveChangesAsync();
+    
+    // Cached query methods for performance optimization
+    Task<List<Models.Flight>> GetFlightsByDepartureDateAsync(DateTime date);
+    Task<List<Models.Flight>> GetFlightsByArrivalDateAsync(DateTime date);
+    Task<List<Models.Flight>> GetFlightsByStatusAsync(string status);
 }

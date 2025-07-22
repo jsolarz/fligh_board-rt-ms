@@ -14,6 +14,7 @@ using FlightBoard.Api.Contract.Auth;
 using FlightBoard.Api.iFX;
 using FlightBoard.Api.iFX.Contract;
 using FlightBoard.Api.iFX.Service;
+using FlightBoard.Api.iFX.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,6 +100,8 @@ builder.Services.AddScoped<IUserDataAccess, UserDataAccess>();
 // iFX Framework Services (Cross-cutting concerns and utilities)
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
+builder.Services.AddScoped<ICacheService, MemoryCacheService>();
+builder.Services.AddMemoryCache(); // Add memory cache support
 builder.Services.AddiFXServices();
 
 // Legacy service registration (maintain for backwards compatibility during transition)
@@ -135,6 +138,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// Add performance monitoring middleware early in pipeline
+app.UseMiddleware<PerformanceMonitoringMiddleware>();
 
 // Use CORS
 app.UseCors("AllowFrontends");
