@@ -1,0 +1,190 @@
+# DEVELOPMENT RULES - MANDATORY ADHERENCE
+
+## 🚨 CARDINAL RULES - NO EXCEPTIONS
+
+### RULE #1: SMALL ITERATIVE CHANGES ONLY
+- ❌ **NEVER** change multiple files in one action
+- ✅ **ALWAYS** make ONE small change at a time
+- ✅ **ALWAYS** focus on a single component/file/function
+- ✅ **MAXIMUM** 1-2 files per change, only when absolutely necessary
+
+### RULE #2: COMMIT FREQUENTLY
+- ✅ Commit after EVERY small change
+- ✅ Use descriptive commit messages
+- ✅ Show progress with each commit
+- ❌ **NEVER** accumulate multiple changes without commits
+
+### RULE #3: UPDATE DOCUMENTATION CONSTANTLY
+- ✅ Update .plan file after every change
+- ✅ Cross-reference against objectives.md
+- ✅ Check against software_design_document.md
+- ✅ Verify alignment with implementation_guide.md
+
+### RULE #4: VERIFY AGAINST REQUIREMENTS
+- ✅ Check docs/objectives.md before every change
+- ✅ Validate against use_cases.md
+- ✅ Ensure alignment with SDD requirements
+- ✅ Follow the implementation guide steps
+
+### RULE #5: FOLLOW INSTRUCTIONS PRECISELY
+- ✅ Read user instructions completely
+- ✅ Ask for clarification if unclear
+- ✅ Follow the specified approach exactly
+- ❌ **NEVER** deviate from explicit instructions
+
+## 🎯 WORKFLOW CHECKLIST
+
+Before making ANY change:
+1. [ ] Read current .plan status
+2. [ ] Check which step we're on
+3. [ ] Identify the SINGLE small change needed
+4. [ ] Verify against objectives.md
+5. [ ] Make ONE small change only
+6. [ ] Test/verify the change
+7. [ ] Commit the change
+8. [ ] Update .plan with progress
+9. [ ] Check if step is complete
+
+## 📋 MANDATORY CHECKS
+
+### Before Each Action:
+- [ ] Is this a SMALL change?
+- [ ] Am I changing only 1-2 files MAX?
+- [ ] Do I understand what step we're on?
+- [ ] Have I checked the requirements?
+- [ ] Will I commit after this change?
+
+### After Each Action:
+- [ ] Did I update .plan?
+- [ ] Did I commit the change?
+- [ ] Is the change working?
+- [ ] What's the next SINGLE small step?
+
+## 🚨 WARNING SIGNALS
+
+If I'm about to:
+- Change more than 2 files → STOP
+- Make a "big" change → STOP
+- Skip documentation → STOP
+- Skip commits → STOP
+- Ignore instructions → STOP
+
+## 📖 REFERENCE FILES TO CHECK
+
+Always reference these files:
+- `.plan` - Current status and progress
+- `docs/objectives.md` - Core requirements
+- `docs/software_design_document.md` - Architecture
+- `docs/implementation_guide.md` - Step-by-step process
+- `docs/use_cases.md` - Functional requirements
+
+## 🎯 CURRENT FOCUS
+
+**STEP 8: Redux Toolkit Integration**
+- Status: Manual edits made, need to verify completion
+- Next: Single small verification step
+- Approach: One small check at a time
+
+---
+
+**REMEMBER: SMALL STEPS, FREQUENT COMMITS, CONSTANT DOCUMENTATION**
+
+SOLID Detailed Design (aka Saving Your Robot from Eminent Destruction)
+
+Repeat after me:
+
+ 
+
+    Good DD saves your Robot (System) from eminent destruction
+    All good DD is SOLID.
+        Both in Behavior (Facets & Operations) and Data (DTOs)
+    Adherence to SOLID is non-negotiable.
+    DTOs must also abide by SOLID in nearly Every Letter.
+        SRP, Open/Closed, (Lyscov) Substitution, ISP
+        Save DI (Inversion, NOT Injection) for behavior only
+    Polymorphism is your friend.
+    The best (only) way to be SOLID is through interface-based programming.
+    APIs are Interfaces.
+        It’s in the (bleepin’) name.
+        Controllers are merely Facets
+    Swagger has supported polymorphism since 2018 (if not earlier)
+        Check out: OneOf, AnyOf
+    
+structure
+a cohesive interaction between the manager, engines and resource access may constitute a logical service to the world.
+- implementing a set of use cases
+- target of the  vertical slice
+- how you extend the system
+- potential stages
+-  A cohesive interaction between services (managers, engines,etc.) is a logical service, and cross layer entities are services (manager, engines etc.)
+
+composable design
+- strive to have a minimal set of interacting services that satisfy all use cases
+  - present and future use cases
+  - known and unknown use cases
+  - iteractive factoring process
+- start with handful core use cases
+  - essential to the business
+  - no need for all use cases
+- when all conceivable use cases are satisfied architecture is validated
+
+service allocation
+- mark services in a box
+- in general, these are always services
+  - managers
+  - engines
+  - roesource access
+  - log book
+- optional services
+  - clients
+  - every other class
+    - The "every other class" is using the same programming model as with regular classes, but with all the goodness of security, transactions, reliability, etc, and without any meaningful performance degradation.
+
+With the Method-structure items, you have to make them services even if it is hell. You can also use the same programming model as with regular classes.
+
+Always treat logging as BI
+
+    Structure it so you can query it
+
+Always enable multiple sinks
+
+    As your system matures, there are numerous scenarios where you need to send your feeds to multiple destinations
+
+Always prefer an SO-programming model
+Always flow Ambient Context
+
+    Always capture and convey the origination of every request
+    Always segregate UserContext from PlatformContext
+
+Never use c-tor injection to inject loggers into your code (services or otherwise)
+
+    ILogger is never succinct enough
+    In general, never use c-tor injection with SO
+    In SO, you should view any class level variables as an anti-pattern. Smells like state.
+
+Instead of ILogger, always create a domain-informed logging framework (iFX.Logging)
+
+    Encapsulate your Config, Strategies and Factories, instead of smearing them in your IoC
+    Internally resolve to the IoC
+    Support multiple sinks
+    Clearly convey intent by creating a straightforward logging programming model
+        Log.Audit.User.LoggedIn
+        Log.Trace.iFX.Operation
+
+Never allow unstructured text logging
+
+    Always use semantic logging
+    You cannot query without structure
+    Logging is BI
+
+If you can get it, prefer to use ETW (Event Tracing for Windows)
+
+    .NET EventSource is a great model for all of this (or use it directly)
+    ETW is local, lightning fast and built into the OS
+    There’s support for many common sinks (like App Insights)
+
+Always prefer AOP SO-style
+
+    Aka Pre/Post Invoke
+    This allows you to time every service call
+    It also allows you enrich at will with Context
