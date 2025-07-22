@@ -14,11 +14,21 @@ public class FlightServiceTests : BaseTestClass
     private readonly FlightService _flightService;
     private readonly Mock<ILogger<FlightService>> _mockLogger;
     private readonly Mock<IHubContext<FlightHub>> _mockHubContext;
+    private readonly Mock<IHubClients> _mockClients;
+    private readonly Mock<IClientProxy> _mockClientProxy;
 
     public FlightServiceTests()
     {
         _mockLogger = new Mock<ILogger<FlightService>>();
         _mockHubContext = new Mock<IHubContext<FlightHub>>();
+        _mockClients = new Mock<IHubClients>();
+        _mockClientProxy = new Mock<IClientProxy>();
+
+        // Setup the SignalR hub context mocks
+        _mockHubContext.Setup(x => x.Clients).Returns(_mockClients.Object);
+        _mockClients.Setup(x => x.All).Returns(_mockClientProxy.Object);
+        _mockClients.Setup(x => x.Group(It.IsAny<string>())).Returns(_mockClientProxy.Object);
+
         _flightService = new FlightService(Context, _mockLogger.Object, _mockHubContext.Object);
     }
 

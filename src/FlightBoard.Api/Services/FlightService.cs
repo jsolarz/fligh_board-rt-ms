@@ -133,7 +133,9 @@ public class FlightService
         // Validate flight data
         await ValidateFlightDataAsync(createDto);
 
-        var flight = FlightMappingService.ToEntity(createDto); _context.Flights.Add(flight); await _context.SaveChangesAsync();
+        var flight = FlightMappingService.ToEntity(createDto);
+        _context.Flights.Add(flight);
+        await _context.SaveChangesAsync();
 
         _logger.LogInformation("Created new flight {FlightNumber} with ID {Id}", flight.FlightNumber, flight.Id);
 
@@ -141,15 +143,18 @@ public class FlightService
         var calculatedStatus = CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture);
         var flightDto = FlightMappingService.ToDto(flight, calculatedStatus);
 
-        // Send real-time notification to all connected clients
-        await _flightHub.Clients.All.SendAsync("FlightCreated", flightDto);
-        await _flightHub.Clients.Group("AllFlights").SendAsync("FlightAdded", flightDto);
+        // Send real-time notification to all connected clients (if available)
+        if (_flightHub != null)
+        {
+            await _flightHub.Clients.All.SendAsync("FlightCreated", flightDto);
+            await _flightHub.Clients.Group("AllFlights").SendAsync("FlightAdded", flightDto);
 
-        // Send to specific flight type groups
-        if (flight.Type == FlightType.Departure)
-            await _flightHub.Clients.Group("Departures").SendAsync("FlightAdded", flightDto);
-        else if (flight.Type == FlightType.Arrival)
-            await _flightHub.Clients.Group("Arrivals").SendAsync("FlightAdded", flightDto);
+            // Send to specific flight type groups
+            if (flight.Type == FlightType.Departure)
+                await _flightHub.Clients.Group("Departures").SendAsync("FlightAdded", flightDto);
+            else
+                await _flightHub.Clients.Group("Arrivals").SendAsync("FlightAdded", flightDto);
+        }
 
         return flightDto;
     }
@@ -172,15 +177,18 @@ public class FlightService
         var calculatedStatus = CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture);
         var flightDto = FlightMappingService.ToDto(flight, calculatedStatus);
 
-        // Send real-time notification to all connected clients
-        await _flightHub.Clients.All.SendAsync("FlightUpdated", flightDto);
-        await _flightHub.Clients.Group("AllFlights").SendAsync("FlightUpdated", flightDto);
+        // Send real-time notification to all connected clients (if available)
+        if (_flightHub != null)
+        {
+            await _flightHub.Clients.All.SendAsync("FlightUpdated", flightDto);
+            await _flightHub.Clients.Group("AllFlights").SendAsync("FlightUpdated", flightDto);
 
-        // Send to specific flight type groups
-        if (flight.Type == FlightType.Departure)
-            await _flightHub.Clients.Group("Departures").SendAsync("FlightUpdated", flightDto);
-        else if (flight.Type == FlightType.Arrival)
-            await _flightHub.Clients.Group("Arrivals").SendAsync("FlightUpdated", flightDto);
+            // Send to specific flight type groups
+            if (flight.Type == FlightType.Departure)
+                await _flightHub.Clients.Group("Departures").SendAsync("FlightUpdated", flightDto);
+            else if (flight.Type == FlightType.Arrival)
+                await _flightHub.Clients.Group("Arrivals").SendAsync("FlightUpdated", flightDto);
+        }
 
         return flightDto;
     }
@@ -291,15 +299,18 @@ public class FlightService
         var calculatedStatus = CalculateFlightStatus(flight.ScheduledDeparture, flight.ActualDeparture);
         var flightDto = FlightMappingService.ToDto(flight, calculatedStatus);
 
-        // Send real-time status update notifications
-        await _flightHub.Clients.All.SendAsync("FlightStatusChanged", flightDto, oldStatus.ToString(), calculatedStatus.ToString());
-        await _flightHub.Clients.Group("AllFlights").SendAsync("FlightUpdated", flightDto);
+        // Send real-time status update notifications (if available)
+        if (_flightHub != null)
+        {
+            await _flightHub.Clients.All.SendAsync("FlightStatusChanged", flightDto, oldStatus.ToString(), calculatedStatus.ToString());
+            await _flightHub.Clients.Group("AllFlights").SendAsync("FlightUpdated", flightDto);
 
-        // Send to specific flight type groups
-        if (flight.Type == FlightType.Departure)
-            await _flightHub.Clients.Group("Departures").SendAsync("FlightUpdated", flightDto);
-        else if (flight.Type == FlightType.Arrival)
-            await _flightHub.Clients.Group("Arrivals").SendAsync("FlightUpdated", flightDto);
+            // Send to specific flight type groups
+            if (flight.Type == FlightType.Departure)
+                await _flightHub.Clients.Group("Departures").SendAsync("FlightUpdated", flightDto);
+            else if (flight.Type == FlightType.Arrival)
+                await _flightHub.Clients.Group("Arrivals").SendAsync("FlightUpdated", flightDto);
+        }
 
         return flightDto;
     }
