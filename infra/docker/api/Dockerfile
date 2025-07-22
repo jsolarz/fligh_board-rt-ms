@@ -1,6 +1,6 @@
 # API Dockerfile for FlightBoard API
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
 # Copy project files for dependency resolution
@@ -26,7 +26,7 @@ FROM build AS publish
 RUN dotnet publish ./src/FlightBoard.Api/FlightBoard.Api.csproj -c Release --no-build -o /app/publish
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
 # Install curl for health checks
