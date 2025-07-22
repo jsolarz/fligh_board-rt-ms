@@ -2,6 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using FlightBoard.Api.Data;
 using FlightBoard.Api.Services;
 using FlightBoard.Api.Hubs;
+using FlightBoard.Api.Managers;
+using FlightBoard.Api.Engines;
+using FlightBoard.Api.DataAccess.Flight;
+using FlightBoard.Api.Contract.Flight;
+using FlightBoard.Api.iFX;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +32,21 @@ builder.Services.AddDbContext<FlightDbContext>(options =>
 // Register database seeder
 builder.Services.AddScoped<DatabaseSeeder>();
 
-// Register application services
+// Register iDesign Method components following proper layering
+
+// Managers (Use case orchestration layer) - using public contract interface
+builder.Services.AddScoped<IFlightManager, FlightManager>();
+
+// Engines (Business logic layer)
+builder.Services.AddScoped<IFlightEngine, FlightEngine>();
+
+// Resource Access layer - updated to align with iDesign Method naming
+builder.Services.AddScoped<IFlightDataAccess, FlightDataAccess>();
+
+// iFX Framework Services (Cross-cutting concerns and utilities)
+builder.Services.AddiFXServices();
+
+// Legacy service registration (maintain for backwards compatibility during transition)
 builder.Services.AddScoped<FlightService>();
 
 // Add API controllers

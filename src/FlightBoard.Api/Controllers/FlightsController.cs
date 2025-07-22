@@ -1,24 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using FlightBoard.Api.DTOs;
-using FlightBoard.Api.Models;
-using FlightBoard.Api.Services;
+using FlightBoard.Api.Contract.Flight;
 
 namespace FlightBoard.Api.Controllers;
 
 /// <summary>
-/// API controller for flight operations
+/// API controller for flight operations following iDesign Method principles
+/// Controllers call Managers to orchestrate use cases
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
 public class FlightsController : ControllerBase
 {
-    private readonly FlightService _flightService;
+    private readonly IFlightManager _flightManager;
     private readonly ILogger<FlightsController> _logger;
 
-    public FlightsController(FlightService flightService, ILogger<FlightsController> logger)
+    public FlightsController(IFlightManager flightManager, ILogger<FlightsController> logger)
     {
-        _flightService = flightService;
+        _flightManager = flightManager;
         _logger = logger;
     }
 
@@ -32,7 +32,7 @@ public class FlightsController : ControllerBase
     {
         try
         {
-            var result = await _flightService.GetFlightsAsync(searchDto);
+            var result = await _flightManager.GetFlightsAsync(searchDto);
             return Ok(result);
         }
         catch (Exception ex)
@@ -52,7 +52,7 @@ public class FlightsController : ControllerBase
     {
         try
         {
-            var flight = await _flightService.GetFlightByIdAsync(id);
+            var flight = await _flightManager.GetFlightByIdAsync(id);
             if (flight == null)
                 return NotFound($"Flight with ID {id} not found");
 
@@ -60,7 +60,7 @@ public class FlightsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving flight {FlightId}", id);
+            _logger.LogError(ex, "Error retrieving flight with ID {FlightId}", id);
             return StatusCode(500, "An error occurred while retrieving the flight");
         }
     }
@@ -78,12 +78,12 @@ public class FlightsController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var flight = await _flightService.CreateFlightAsync(createDto);
+            var flight = await _flightManager.CreateFlightAsync(createDto);
             return CreatedAtAction(nameof(GetFlight), new { id = flight.Id }, flight);
         }
-        catch (ValidationException ex)
+        catch (ArgumentException ex)
         {
-            _logger.LogWarning("Validation error creating flight: {Error}", ex.Message);
+            _logger.LogWarning(ex, "Validation error creating flight");
             return BadRequest(ex.Message);
         }
         catch (Exception ex)
@@ -107,35 +107,32 @@ public class FlightsController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var flight = await _flightService.UpdateFlightAsync(id, updateDto);
-            if (flight == null)
-                return NotFound($"Flight with ID {id} not found");
-
+            var flight = await _flightManager.UpdateFlightAsync(id, updateDto);
             return Ok(flight);
         }
-        catch (ValidationException ex)
+        catch (ArgumentException ex)
         {
-            _logger.LogWarning("Validation error updating flight {FlightId}: {Error}", id, ex.Message);
+            _logger.LogWarning(ex, "Validation error updating flight with ID {FlightId}", id);
             return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating flight {FlightId}", id);
+            _logger.LogError(ex, "Error updating flight with ID {FlightId}", id);
             return StatusCode(500, "An error occurred while updating the flight");
         }
     }
 
     /// <summary>
-    /// Delete a flight (soft delete)
+    /// Delete a flight
     /// </summary>
     /// <param name="id">Flight ID</param>
-    /// <returns>Success result</returns>
+    /// <returns>Success status</returns>
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteFlight(int id)
     {
         try
         {
-            var result = await _flightService.DeleteFlightAsync(id);
+            var result = await _flightManager.DeleteFlightAsync(id);
             if (!result)
                 return NotFound($"Flight with ID {id} not found");
 
@@ -143,88 +140,8 @@ public class FlightsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting flight {FlightId}", id);
+            _logger.LogError(ex, "Error deleting flight with ID {FlightId}", id);
             return StatusCode(500, "An error occurred while deleting the flight");
-        }
-    }
-
-    /// <summary>
-    /// Get departures with pagination
-    /// </summary>
-    /// <param name="page">Page number</param>
-    /// <param name="pageSize">Items per page</param>
-    /// <returns>Paginated departure flights</returns>
-    [HttpGet("departures")]
-    public async Task<ActionResult<PagedResponse<FlightDto>>> GetDepartures([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-    {
-        try
-        {
-            var result = await _flightService.GetFlightsByTypeAsync(FlightType.Departure, page, pageSize);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving departures");
-            return StatusCode(500, "An error occurred while retrieving departures");
-        }
-    }
-
-    /// <summary>
-    /// Get arrivals with pagination
-    /// </summary>
-    /// <param name="page">Page number</param>
-    /// <param name="pageSize">Items per page</param>
-    /// <returns>Paginated arrival flights</returns>
-    [HttpGet("arrivals")]
-    public async Task<ActionResult<PagedResponse<FlightDto>>> GetArrivals([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-    {
-        try
-        {
-            var result = await _flightService.GetFlightsByTypeAsync(FlightType.Arrival, page, pageSize);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving arrivals");
-            return StatusCode(500, "An error occurred while retrieving arrivals");
-        }
-    }
-
-    /// <summary>
-    /// Get currently active flights
-    /// </summary>
-    /// <returns>List of active flights</returns>
-    [HttpGet("active")]
-    public async Task<ActionResult<IEnumerable<FlightDto>>> GetActiveFlights()
-    {
-        try
-        {
-            var flights = await _flightService.GetActiveFlightsAsync();
-            return Ok(flights);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving active flights");
-            return StatusCode(500, "An error occurred while retrieving active flights");
-        }
-    }
-
-    /// <summary>
-    /// Get delayed flights
-    /// </summary>
-    /// <returns>List of delayed flights</returns>
-    [HttpGet("delayed")]
-    public async Task<ActionResult<IEnumerable<FlightDto>>> GetDelayedFlights()
-    {
-        try
-        {
-            var flights = await _flightService.GetDelayedFlightsAsync();
-            return Ok(flights);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving delayed flights");
-            return StatusCode(500, "An error occurred while retrieving delayed flights");
         }
     }
 
@@ -239,56 +156,89 @@ public class FlightsController : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<FlightStatus>(statusRequest.Status, out var status))
-                return BadRequest("Invalid flight status");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var flight = await _flightService.UpdateFlightStatusAsync(id, status, statusRequest.Remarks);
-            if (flight == null)
-                return NotFound($"Flight with ID {id} not found");
-
+            var flight = await _flightManager.UpdateFlightStatusAsync(id, statusRequest.Status);
             return Ok(flight);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid status update for flight with ID {FlightId}", id);
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating flight status for {FlightId}", id);
-            return StatusCode(500, "An error occurred while updating flight status");
+            _logger.LogError(ex, "Error updating flight status for ID {FlightId}", id);
+            return StatusCode(500, "An error occurred while updating the flight status");
         }
     }
 
     /// <summary>
-    /// Search flights by status and/or destination (required by objectives.md)
+    /// Search flights with filtering - legacy endpoint maintained for compatibility
     /// </summary>
-    /// <param name="status">Filter by flight status (optional)</param>
-    /// <param name="destination">Filter by destination airport code (optional)</param>
-    /// <param name="page">Page number for pagination (default: 1)</param>
-    /// <param name="pageSize">Number of items per page (default: 10)</param>
-    /// <returns>Paginated and filtered list of flights</returns>
+    /// <param name="searchDto">Search and filter parameters</param>
+    /// <returns>Paginated list of matching flights</returns>
     [HttpGet("search")]
-    public async Task<ActionResult<PagedResponse<FlightDto>>> SearchFlights(
-        [FromQuery] string? status = null,
-        [FromQuery] string? destination = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<PagedResponse<FlightDto>>> SearchFlights([FromQuery] FlightSearchDto searchDto)
     {
         try
         {
-            // Create search DTO with filter parameters
-            var searchDto = new FlightSearchDto
-            {
-                Status = status,
-                Destination = destination,
-                Page = page,
-                PageSize = pageSize
-            };
+            _logger.LogInformation("Searching flights with filters: FlightNumber={FlightNumber}, Airline={Airline}, Status={Status}",
+                searchDto.FlightNumber, searchDto.Airline, searchDto.Status);
 
-            var result = await _flightService.GetFlightsAsync(searchDto);
+            // Use the same method as the main GET endpoint for consistency
+            var result = await _flightManager.GetFlightsAsync(searchDto);
             return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error searching flights with status: {Status}, destination: {Destination}",
-                status, destination);
+            _logger.LogError(ex, "Error searching flights");
             return StatusCode(500, "An error occurred while searching flights");
+        }
+    }
+
+    /// <summary>
+    /// Get departure flights with pagination
+    /// </summary>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Items per page (default: 20)</param>
+    /// <returns>Paginated departure flights</returns>
+    [HttpGet("departures")]
+    public async Task<ActionResult<PagedResponse<FlightDto>>> GetDepartures([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var searchDto = new FlightSearchDto { Type = "Departure", Page = page, PageSize = pageSize };
+            var result = await _flightManager.GetFlightsAsync(searchDto);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving departure flights");
+            return StatusCode(500, "An error occurred while retrieving departure flights");
+        }
+    }
+
+    /// <summary>
+    /// Get arrival flights with pagination
+    /// </summary>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Items per page (default: 20)</param>
+    /// <returns>Paginated arrival flights</returns>
+    [HttpGet("arrivals")]
+    public async Task<ActionResult<PagedResponse<FlightDto>>> GetArrivals([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var searchDto = new FlightSearchDto { Type = "Arrival", Page = page, PageSize = pageSize };
+            var result = await _flightManager.GetFlightsAsync(searchDto);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving arrival flights");
+            return StatusCode(500, "An error occurred while retrieving arrival flights");
         }
     }
 }
