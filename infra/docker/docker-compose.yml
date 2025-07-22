@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+  # Redis Cache for Performance Optimization
+  redis:
+    image: redis:7-alpine
+    container_name: flightboard-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - flightboard-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Flight Board API Backend
   flightboard-api:
     build:
@@ -13,6 +30,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/flightboard.db
+      - ConnectionStrings__Redis=redis:6379
       - Jwt__Secret=SuperSecureJwtSecretKeyForProductionUse2024!
       - Jwt__Issuer=FlightBoard.Api
       - Jwt__Audience=FlightBoard.Frontend
@@ -22,6 +40,8 @@ services:
       - flightboard-data:/app/data
     networks:
       - flightboard-network
+    depends_on:
+      - redis
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -86,6 +106,10 @@ volumes:
       type: none
       o: bind
       device: ../../../data
+  
+  # Redis data volume for caching persistence
+  redis-data:
+    driver: local
 
 networks:
   flightboard-network:

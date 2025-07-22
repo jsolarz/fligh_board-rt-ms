@@ -133,13 +133,23 @@ function Invoke-PodmanAction {
             } else {
                 # Use native Podman commands
                 Write-Status "Creating Podman pod: $($script:PodName)..."
-                podman pod create --name $script:PodName -p 5183:8080 -p 3000:3000 -p 3001:3001
+                podman pod create --name $script:PodName -p 5183:8080 -p 3000:3000 -p 3001:3001 -p 6379:6379
                 
-                # Build and run API container
+                # Start Redis cache first
+                Write-Status "Starting Redis cache..."
+                podman run -d --pod $script:PodName --name flightboard-redis `
+                    -v "redis-data:/data" `
+                    redis:7-alpine
+                
+                # Wait for Redis to be ready
+                Start-Sleep -Seconds 3
+                
+                # Build and run API container with Redis connection
                 Write-Status "Building and running API container..."
                 podman build -t flightboard-api:latest -f api/Dockerfile ../../../
                 podman run -d --pod $script:PodName --name flightboard-api-container `
                     --env-file $script:EnvFile `
+                    -e "ConnectionStrings__Redis=localhost:6379" `
                     -v "flightboard-data:/app/data" `
                     flightboard-api:latest
             }

@@ -154,13 +154,23 @@ perform_action() {
             else
                 # Use native Podman commands
                 print_status "Creating Podman pod: $POD_NAME..."
-                podman pod create --name "$POD_NAME" -p 5183:8080 -p 3000:3000 -p 3001:3001 || true
+                podman pod create --name "$POD_NAME" -p 5183:8080 -p 3000:3000 -p 3001:3001 -p 6379:6379 || true
                 
-                # Build and run API container
+                # Start Redis cache first
+                print_status "Starting Redis cache..."
+                podman run -d --pod "$POD_NAME" --name flightboard-redis \
+                    -v redis-data:/data \
+                    redis:7-alpine || print_warning "Redis container may already be running"
+                
+                # Wait for Redis to be ready
+                sleep 3
+                
+                # Build and run API container with Redis connection
                 print_status "Building and running API container..."
                 podman build -t flightboard-api:latest -f api/Dockerfile ../../../
                 podman run -d --pod "$POD_NAME" --name flightboard-api-container \
                     --env-file "$ENV_FILE" \
+                    -e ConnectionStrings__Redis="localhost:6379" \
                     -v flightboard-data:/app/data \
                     flightboard-api:latest || print_warning "Container may already be running"
             fi

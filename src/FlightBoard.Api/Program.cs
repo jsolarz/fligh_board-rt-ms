@@ -13,6 +13,7 @@ using FlightBoard.Api.Contract.Flight;
 using FlightBoard.Api.Contract.Auth;
 using FlightBoard.Api.iFX;
 using FlightBoard.Api.iFX.Contract;
+using FlightBoard.Api.iFX.Contract.Service;
 using FlightBoard.Api.iFX.Service;
 using FlightBoard.Api.iFX.Middleware;
 
@@ -100,8 +101,11 @@ builder.Services.AddScoped<IUserDataAccess, UserDataAccess>();
 // iFX Framework Services (Cross-cutting concerns and utilities)
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
-builder.Services.AddScoped<ICacheService, MemoryCacheService>();
-builder.Services.AddMemoryCache(); // Add memory cache support
+builder.Services.AddScoped<IPerformanceService, PerformanceService>();
+
+// Add memory cache for basic caching
+builder.Services.AddMemoryCache();
+
 builder.Services.AddiFXServices();
 
 // Legacy service registration (maintain for backwards compatibility during transition)
