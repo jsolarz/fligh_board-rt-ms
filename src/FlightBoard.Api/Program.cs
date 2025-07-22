@@ -1,12 +1,19 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using FlightBoard.Api.Data;
 using FlightBoard.Api.Services;
 using FlightBoard.Api.Hubs;
 using FlightBoard.Api.Managers;
 using FlightBoard.Api.Engines;
 using FlightBoard.Api.DataAccess.Flight;
+using FlightBoard.Api.DataAccess.User;
 using FlightBoard.Api.Contract.Flight;
+using FlightBoard.Api.Contract.Auth;
 using FlightBoard.Api.iFX;
+using FlightBoard.Api.iFX.Contract;
+using FlightBoard.Api.iFX.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +36,49 @@ builder.Services.AddDbContext<FlightDbContext>(options =>
     }
 });
 
+// Configure JWT Authentication
+var jwtSecret = builder.Configuration["Jwt:Secret"]
+    ?? throw new InvalidOperationException("JWT Secret not configured");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        ClockSkew = TimeSpan.Zero // No clock skew tolerance
+    };
+
+    // Configure JWT for SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/flighthub"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
+});
+
+builder.Services.AddAuthorization();
+
 // Register database seeder
 builder.Services.AddScoped<DatabaseSeeder>();
 
@@ -36,14 +86,19 @@ builder.Services.AddScoped<DatabaseSeeder>();
 
 // Managers (Use case orchestration layer) - using public contract interface
 builder.Services.AddScoped<IFlightManager, FlightManager>();
+builder.Services.AddScoped<IAuthManager, AuthManager>();
 
 // Engines (Business logic layer)
 builder.Services.AddScoped<IFlightEngine, FlightEngine>();
+builder.Services.AddScoped<IAuthEngine, AuthEngine>();
 
-// Resource Access layer - updated to align with iDesign Method naming
+// Data Access layer - following iDesign Method naming
 builder.Services.AddScoped<IFlightDataAccess, FlightDataAccess>();
+builder.Services.AddScoped<IUserDataAccess, UserDataAccess>();
 
 // iFX Framework Services (Cross-cutting concerns and utilities)
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
 builder.Services.AddiFXServices();
 
 // Legacy service registration (maintain for backwards compatibility during transition)
@@ -83,6 +138,10 @@ if (app.Environment.IsDevelopment())
 
 // Use CORS
 app.UseCors("AllowFrontends");
+
+// Use Authentication and Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseHttpsRedirection();
 

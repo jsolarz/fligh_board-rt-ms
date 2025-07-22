@@ -1,5 +1,6 @@
 using FlightBoard.Api.Data;
 using FlightBoard.Api.Models;
+using FlightBoard.Api.iFX.Contract;
 using Microsoft.EntityFrameworkCore;
 
 namespace FlightBoard.Api.Services;
@@ -11,11 +12,13 @@ public class DatabaseSeeder
 {
     private readonly FlightDbContext _context;
     private readonly ILogger<DatabaseSeeder> _logger;
+    private readonly IPasswordHashService _passwordHashService;
 
-    public DatabaseSeeder(FlightDbContext context, ILogger<DatabaseSeeder> logger)
+    public DatabaseSeeder(FlightDbContext context, ILogger<DatabaseSeeder> logger, IPasswordHashService passwordHashService)
     {
         _context = context;
         _logger = logger;
+        _passwordHashService = passwordHashService;
     }
 
     /// <summary>
@@ -25,10 +28,13 @@ public class DatabaseSeeder
     {
         try
         {
+            // Seed users first (authentication foundation)
+            await SeedUsersAsync();
+
             // Check if database has any flights
             if (await _context.Flights.AnyAsync())
             {
-                _logger.LogInformation("Database already contains flight data, skipping seeding");
+                _logger.LogInformation("Database already contains flight data, skipping flight seeding");
                 return;
             }
 
@@ -235,5 +241,74 @@ public class DatabaseSeeder
         }
 
         return remarks.Any() ? string.Join(". ", remarks) : null;
+    }
+
+    /// <summary>
+    /// Seed the database with default users for authentication testing
+    /// </summary>
+    private async Task SeedUsersAsync()
+    {
+        // Check if any users exist
+        if (await _context.Users.AnyAsync())
+        {
+            _logger.LogInformation("Database already contains users, skipping user seeding");
+            return;
+        }
+
+        _logger.LogInformation("Seeding database with default users");
+
+        var defaultUsers = new List<User>
+        {
+            // Administrator user
+            new User
+            {
+                Username = "admin",
+                Email = "admin@flightboard.com",
+                FirstName = "System",
+                LastName = "Administrator",
+                PasswordHash = _passwordHashService.HashPassword("Admin123!"),
+                Role = UserRole.Admin,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+
+            // Flight operator user
+            new User
+            {
+                Username = "operator",
+                Email = "operator@flightboard.com",
+                FirstName = "Flight",
+                LastName = "Operator",
+                PasswordHash = _passwordHashService.HashPassword("Operator123!"),
+                Role = UserRole.Operator,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+
+            // Standard user
+            new User
+            {
+                Username = "user",
+                Email = "user@flightboard.com",
+                FirstName = "Standard",
+                LastName = "User",
+                PasswordHash = _passwordHashService.HashPassword("User123!"),
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+
+        await _context.Users.AddRangeAsync(defaultUsers);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Successfully seeded {Count} users into database", defaultUsers.Count);
+        _logger.LogInformation("Default users created:");
+        _logger.LogInformation("  Admin: admin / Admin123!");
+        _logger.LogInformation("  Operator: operator / Operator123!");
+        _logger.LogInformation("  User: user / User123!");
     }
 }

@@ -1,5 +1,7 @@
 using FlightBoard.Api.iFX.CrossCutting.Notifications;
 using FlightBoard.Api.iFX.Utilities.Mapping;
+using FlightBoard.Api.iFX.Contract;
+using FlightBoard.Api.iFX.Utilities;
 
 namespace FlightBoard.Api.iFX;
 
@@ -29,7 +31,7 @@ public static class iFXServiceCollectionExtensions
     private static IServiceCollection AddCrossCuttingServices(this IServiceCollection services)
     {
         // Notification engines
-        services.AddScoped<INotificationEngine, SignalRNotificationEngine>();
+        services.AddScoped<CrossCutting.Notifications.INotificationEngine, SignalRNotificationEngine>();
 
         return services;
     }
@@ -41,6 +43,7 @@ public static class iFXServiceCollectionExtensions
     {
         // Mapping utilities
         services.AddScoped<IFlightMappingUtility, FlightMappingUtility>();
+        services.AddScoped<IUserMappingUtility, UserMappingUtility>();
 
         return services;
     }

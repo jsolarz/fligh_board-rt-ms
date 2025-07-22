@@ -18,12 +18,20 @@ public class FlightDbContext : DbContext
     /// </summary>
     public DbSet<Flight> Flights { get; set; }
 
+    /// <summary>
+    /// User entities table
+    /// </summary>
+    public DbSet<User> Users { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // Configure Flight entity
         ConfigureFlightEntity(modelBuilder);
+
+        // Configure User entity
+        ConfigureUserEntity(modelBuilder);
 
         // Configure global query filters for soft delete
         ConfigureSoftDeleteFilters(modelBuilder);
@@ -103,6 +111,89 @@ public class FlightDbContext : DbContext
         flightEntity.Ignore(f => f.IsDelayed);
         flightEntity.Ignore(f => f.EstimatedDeparture);
         flightEntity.Ignore(f => f.EstimatedArrival);
+    }
+
+    /// <summary>
+    /// Configure User entity with indexes and constraints
+    /// </summary>
+    private void ConfigureUserEntity(ModelBuilder modelBuilder)
+    {
+        var userEntity = modelBuilder.Entity<User>();
+
+        // Primary key
+        userEntity.HasKey(u => u.Id);
+
+        // Unique constraints
+        userEntity.HasIndex(u => u.Username)
+            .IsUnique()
+            .HasDatabaseName("IX_Users_Username_Unique");
+
+        userEntity.HasIndex(u => u.Email)
+            .IsUnique()
+            .HasDatabaseName("IX_Users_Email_Unique");
+
+        // Performance indexes
+        userEntity.HasIndex(u => u.Role)
+            .HasDatabaseName("IX_Users_Role");
+
+        userEntity.HasIndex(u => u.IsActive)
+            .HasDatabaseName("IX_Users_IsActive");
+
+        userEntity.HasIndex(u => u.RefreshToken)
+            .HasDatabaseName("IX_Users_RefreshToken");
+
+        userEntity.HasIndex(u => u.IsDeleted)
+            .HasDatabaseName("IX_Users_IsDeleted");
+
+        // Composite indexes for common queries
+        userEntity.HasIndex(u => new { u.IsActive, u.Role })
+            .HasDatabaseName("IX_Users_IsActive_Role");
+
+        // Property configurations
+        userEntity.Property(u => u.Username)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        userEntity.Property(u => u.Email)
+            .HasMaxLength(255)
+            .IsRequired();
+
+        userEntity.Property(u => u.FirstName)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        userEntity.Property(u => u.LastName)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        userEntity.Property(u => u.PasswordHash)
+            .HasMaxLength(255)
+            .IsRequired();
+
+        userEntity.Property(u => u.RefreshToken)
+            .HasMaxLength(500);
+
+        // Enum configuration
+        userEntity.Property(u => u.Role)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        // Default values and auto-generated properties
+        userEntity.Property(u => u.CreatedAt)
+            .HasDefaultValueSql("datetime('now')")
+            .ValueGeneratedOnAdd();
+
+        userEntity.Property(u => u.UpdatedAt)
+            .HasDefaultValueSql("datetime('now')")
+            .ValueGeneratedOnAddOrUpdate();
+
+        userEntity.Property(u => u.IsActive)
+            .HasDefaultValue(true);
+
+        // Computed properties (read-only)
+        userEntity.Ignore(u => u.FullName);
+        userEntity.Ignore(u => u.IsAdmin);
+        userEntity.Ignore(u => u.IsOperator);
     }
 
     /// <summary>
