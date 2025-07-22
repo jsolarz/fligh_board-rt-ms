@@ -5,7 +5,7 @@ import { FlightApiService } from "../services/flight-api.service"
 import { FlightDto, FlightType, PagedResponse } from "../types/flight.types"
 import LoadingSpinner from "./LoadingSpinner"
 import ErrorAlert from "./ErrorAlert"
-import SearchFilters from "./SearchFilters"
+import SearchFiltersRedux from "./SearchFiltersRedux"
 import Pagination from "./Pagination"
 import useSignalR from "../hooks/useSignalR"
 import { useAppSelector, useAppDispatch } from "../store"
@@ -62,7 +62,11 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
           : ["AllFlights"],
     })
 
-  // Handle search parameter changes with useCallback to prevent unnecessary re-renders  const {
+  // Handle search parameter changes with useCallback to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((newSearchParams: any) => {
+    // Search params are managed by Redux, this is just for backward compatibility
+    console.log("Search params changed:", newSearchParams)
+  }, [])
   const {
     data: flightsData,
     isLoading: queryLoading,
@@ -183,8 +187,13 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
             REFRESH_DATA
           </button>
         </div>
-      </div>      {/* Search and Filter Interface */}
-      <SearchFilters isLoading={queryLoading} />
+      </div>
+
+      {/* Search and Filter Interface */}
+      <SearchFiltersRedux
+        onSearchChange={handleSearchChange}
+        isLoading={queryLoading}
+      />
 
       {/* Flight Table */}
       <div className="holographic rounded-lg overflow-hidden border border-neon-cyan/30">

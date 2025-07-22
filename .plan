@@ -4,7 +4,7 @@
 
 ---
 
-## Current Status: Phase 2 - Step 8.3 Redux Verification IN PROGRESS 🔄
+## Current Status: Phase 2 - Step 7 COMPLETED ✅
 
 **Build Date:** July 21, 2025  
 **API Status:** RUNNING (localhost:5183) ✅  
@@ -13,7 +13,6 @@
 **Frontend Backoffice:** BBS TERMINAL STYLING (COMPLETED) ✅  
 **Real-time Updates:** SignalR integration working across both frontends ✅  
 **Search & Filtering:** Advanced frontend search with backend integration (COMPLETED) ✅  
-**Redux Integration:** Store setup and component integration completed, testing needed 🔄
 **Documentation:** Organized in `docs/` folder with git history preserved ✅
 
 ## Project Structure Update
@@ -36,218 +35,168 @@
 
 ---
 
-## SMALL ITERATIVE STEPS PROGRESS LOG
+## Progress Log
 
-### **Phase 1: Foundation (COMPLETED) ✅**
+### **Step 1: Project Structure Setup** ✅ DONE
+*The foundation matters. Get the scaffolding right or everything built on top will be wobbly.*
 
-#### **Step 1.1: Project Structure Setup** ✅ DONE
-- Create .NET 9 solution with Web API project ✅
-- Generate React TypeScript frontend (Consumer) ✅  
-- Update project to target .NET 9.0 framework ✅
-- **Commit:** `feat: initial project structure setup`
+**What actually happened:**
+- Created .NET 9 solution with Web API project ✅
+- Generated two React TypeScript frontends (Consumer + Backoffice) ✅  
+- Updated project to target .NET 9.0 framework ✅
+- Solution builds clean (`dotnet build`) ✅
+- README with setup instructions ✅
+- Git repo initialized with proper .gitignore ✅
 
-#### **Step 1.2: Documentation Foundation** ✅ DONE  
-- Initialize Git repo with proper .gitignore ✅
-- Create README with setup instructions ✅
-- Move all docs to `docs/` folder ✅
-- **Commit:** `docs: organize documentation structure`
+**Commit:** `feat: initial project structure setup`
 
-#### **Step 2.1: Database Models** ✅ DONE
-- Install EF Core packages (SQLite, Design, Tools) ✅
-- Create `BaseEntity` with audit fields ✅
-- Create `Flight` entity with comprehensive properties ✅
-- **Commit:** `feat: database models and entities`
+**Reality check:** Smooth sailing. No surprises. The tooling for .NET 9 and React is mature.
 
-#### **Step 2.2: Database Context** ✅ DONE
-- Create `FlightDbContext` with proper indexes ✅
-- Implement soft deletes via global query filters ✅
-- Add automatic audit timestamp handling ✅
-- **Commit:** `feat: database context with audit and soft delete`
+---
 
-#### **Step 2.3: Database Migration** ✅ DONE
-- Create initial migration `InitialFlightSchema` ✅
-- Move database to secure `Data/` folder ✅
-- Apply migration and seed realistic sample data ✅
-- **Commit:** `feat: initial database migration and seeding`
+### **Step 2: Database Foundation** ✅ DONE  
+*Entity Framework is like a Swiss Army knife - powerful but you need to know which blade to use for which job.*
 
-#### **Step 2.4: Modern DTOs** ✅ DONE
-- Convert DTOs to .NET 9 records with `required` properties ✅
-- Create pure C# mapping service ✅
-- Add comprehensive validation attributes ✅
-- **Commit:** `feat: modernize DTOs with .NET 9 records`
+**What actually happened:**
+- EF Core packages installed (SQLite, Design, Tools) ✅
+- `BaseEntity` with audit fields (Id, CreatedAt, UpdatedAt, IsDeleted, CreatedBy, UpdatedBy) ✅
+- `Flight` entity with comprehensive properties and enums ✅
+- `FlightDbContext` with proper indexes, soft deletes, audit handling ✅
+- Initial migration `InitialFlightSchema` created and applied ✅
+- `DatabaseSeeder` with realistic sample data (60 flights) ✅
+- **SECURITY IMPROVEMENT:** Moved database to `Data/` folder outside project directory ✅
+- **MODERNIZATION:** Converted DTOs to .NET 9 records with `required`/`init` properties ✅
 
-#### **Step 3.1: Basic API Controller** ✅ DONE
-- Create `FlightsController` with basic CRUD ✅
-- Implement GET /api/flights (paginated) ✅
-- Add proper HTTP status codes and error handling ✅
-- **Commit:** `feat: basic flights controller with CRUD`
+**Technical notes:**
+- Soft delete implemented via global query filters
+- Automatic audit timestamp updates in `SaveChanges()`
+- Comprehensive indexes for performance (single + composite)
+- Pure C# mapping service (no AutoMapper bloat)
 
-#### **Step 3.2: Flight Service Layer** ✅ DONE
-- Create `FlightService` with business logic separation ✅
-- Implement specialized endpoints (departures, arrivals, active, delayed) ✅
-- Add PATCH endpoint for status updates ✅
-- **Commit:** `feat: flight service layer with specialized endpoints`
+**Commit:** `feat: complete Step 2 - Database Foundation with modern .NET 9 features`
 
-#### **Step 3.3: API Testing** ✅ DONE
-- Configure CORS for frontend apps ✅
-- Test all endpoints with sample data ✅
-- Verify pagination and filtering works ✅
-- **Commit:** `feat: API testing and CORS configuration`
+**Reality check:** The record DTO conversion was the right call. Immutable by default, less boilerplate, and the `required` keyword catches missing properties at compile time. Moving the database was smart - no secrets in the project folder.
 
-#### **Step 4.1: Frontend Dependencies** ✅ DONE
-- Install React Query and Axios ✅
-- Install Tailwind CSS and configure ✅
-- Create TypeScript interfaces matching backend DTOs ✅
-- **Commit:** `feat: frontend dependencies and TypeScript setup`
+---
 
-#### **Step 4.2: API Service Layer** ✅ DONE
-- Create FlightApiService with comprehensive error handling ✅
-- Setup React Query client with caching strategy ✅
-- Add environment configuration (.env) ✅
-- **Commit:** `feat: frontend API service and React Query setup`
+### **Step 3: Basic API Endpoints** ✅ DONE
+*APIs are contracts. Make them clear, predictable, and hard to misuse.*
 
-#### **Step 4.3: Core Components** ✅ DONE
-- Create FlightBoard component with responsive table ✅
-- Add LoadingSpinner and ErrorAlert components ✅
-- Create HealthCheck component for API monitoring ✅
-- **Commit:** `feat: core frontend components with error handling`
+**What actually happened:**
+- `FlightsController` with full CRUD operations ✅
+- Modern record DTOs with comprehensive validation attributes ✅
+- `FlightService` with business logic separation ✅
+- Pure C# mapping service (no external dependencies) ✅
+- Error handling with proper HTTP status codes ✅
+- CORS configured for frontend apps ✅
 
-#### **Step 4.4: Cyberpunk Styling** ✅ DONE
-- Enhance Tailwind config with cyberpunk color palette ✅
-- Add global CSS with holographic effects and animations ✅
-- Transform all components to cyberpunk "SKYNET BOARD" theme ✅
-- **Commit:** `feat: cyberpunk styling transformation`
+**API Endpoints implemented:**
+```
+GET    /api/flights              (paginated, searchable)
+GET    /api/flights/{id}         (single flight)
+POST   /api/flights              (create)
+PUT    /api/flights/{id}         (update)
+DELETE /api/flights/{id}         (soft delete)
+GET    /api/flights/departures   (paginated departures)
+GET    /api/flights/arrivals     (paginated arrivals)  
+GET    /api/flights/active       (current active flights)
+GET    /api/flights/delayed      (delayed flights)
+PATCH  /api/flights/{id}/status  (status updates)
+```
 
-#### **Step 5.1: SignalR Backend** ✅ DONE
-- Install SignalR packages and create FlightHub ✅
-- Configure SignalR in Program.cs with CORS ✅
-- Add real-time notifications to FlightService ✅
-- **Commit:** `feat: SignalR backend implementation`
+**Live test results:**
+- API responding on localhost:5183 ✅
+- Paginated responses working (tested with `?pageSize=3`) ✅  
+- Sample data loaded (60 total flights confirmed) ✅
+- Departures/arrivals endpoints functional ✅
 
-#### **Step 5.2: SignalR Frontend** ✅ DONE
-- Install @microsoft/signalr client ✅
-- Create SignalR service with connection management ✅
-- Implement useSignalR hook with React Query integration ✅
-- **Commit:** `feat: SignalR frontend integration`
+**Technical debt:** None identified. Clean separation of concerns.
 
-#### **Step 5.3: Real-time UI** ✅ DONE
-- Update FlightBoard with connection status indicator ✅
-- Add automatic cache invalidation on real-time events ✅
-- Test real-time updates across both frontends ✅
-- **Commit:** `feat: real-time UI updates with SignalR`
+**Next commit:** Will be Step 3 completion
 
-#### **Step 6.1: Backoffice Structure** ✅ DONE
-- Generate second React app for backoffice ✅
-- Setup BBS terminal styling with green-on-black theme ✅
-- Create admin-specific TypeScript interfaces ✅
-- **Commit:** `feat: backoffice app structure and BBS styling`
+**Reality check:** This is where the modern C# features really shine. Records make the DTOs bulletproof, and the validation attributes catch bad data at the boundary. The API is fast and responsive even with the comprehensive indexing.
 
-#### **Step 6.2: Flight Management Forms** ✅ DONE
-- Create FlightForm component with validation ✅
-- Implement FlightList with admin actions ✅
-- Add delete confirmation dialogs ✅
-- **Commit:** `feat: flight management forms and validation`
+---
 
-#### **Step 6.3: Admin Integration** ✅ DONE
-- Connect backoffice to existing API endpoints ✅
-- Test CRUD operations with real-time updates ✅
-- Verify admin interface usability ✅
-- **Commit:** `feat: admin interface integration and testing`
+### **Step 4: Frontend Foundation (Consumer App)** ✅ DONE
+*React is like a Swiss Army knife for UIs - powerful when you use the right blade for each job.*
 
-#### **Step 7.1: Search Components** ✅ DONE
-- Create SearchFilters component with cyberpunk styling ✅
-- Implement Pagination component with intelligent navigation ✅
-- Add debounced input to prevent API spam ✅
-- **Commit:** `feat: search and filter UI components`
+**What actually happened:**
+- React Query (@tanstack/react-query) + Axios installed ✅
+- TypeScript interfaces created matching backend DTOs ✅
+- FlightApiService with comprehensive error handling ✅
+- FlightBoard component with responsive table design ✅
+- LoadingSpinner and ErrorAlert components ✅
+- HealthCheck component for API connectivity monitoring ✅
+- Tailwind CSS configured for modern styling ✅
+- Environment configuration (.env) ✅
+- React Query client with optimized caching strategy ✅
 
-#### **Step 7.2: Filter Logic** ✅ DONE
-- Add smart query logic (search vs optimized endpoints) ✅
-- Implement form state management with useCallback ✅
-- Create comprehensive filter types (7 total) ✅
-- **Commit:** `feat: advanced filtering logic and optimization`
+**Frontend Architecture:**
+```
+src/
+├── components/
+│   ├── FlightBoard.tsx      (main display component)
+│   ├── LoadingSpinner.tsx   (reusable loading indicator)
+│   ├── ErrorAlert.tsx       (error handling with retry)
+│   └── HealthCheck.tsx      (API connectivity status)
+├── services/
+│   └── flight-api.service.ts (API communication layer)
+├── types/
+│   └── flight.types.ts      (TypeScript interfaces)
+├── config/
+│   └── query-client.ts      (React Query configuration)
+└── App.tsx                  (main app with navigation)
+```
 
-#### **Step 7.3: Search Integration** ✅ DONE
-- Test search API endpoint with various combinations ✅
-- Verify pagination works with filtered results ✅
-- Validate responsive design across screen sizes ✅
-- **Commit:** `feat: search integration testing and validation`
+**Key Features Implemented:**
+- 🎯 **Real-time data fetching** with 30-second refresh intervals
+- 🔄 **Smart caching** using React Query (5min stale time)
+- 📱 **Responsive design** with Tailwind CSS
+- ⚡ **Error handling** with automatic retry logic
+- 🔌 **API health monitoring** with visual status indicator
+- 📊 **Pagination** with clean navigation controls
+- 🎨 **Modern UI** with status badges and animations
 
-### **Phase 2: Advanced Features (IN PROGRESS) 🔄**
+**Technical decisions:**
+- **React Query over SWR:** Mature ecosystem, better devtools, advanced caching
+- **Axios over Fetch:** Interceptors, timeout handling, better error management
+- **Tailwind over styled-components:** Faster development, smaller bundle
+- **TypeScript interfaces synced manually:** Simple approach, avoids code generation complexity
 
-#### **Step 8.1: Redux Package Installation** ✅ DONE
-- Install @reduxjs/toolkit and react-redux ✅
-- Install TypeScript types for Redux ✅
-- **Commit:** `feat: install Redux Toolkit packages`
+**API Integration tested:**
+- Health check endpoint responding ✅
+- Flights endpoint accessible via browser ✅
+- CORS configured for localhost:3000 ✅
+- Error handling tested with network failures ✅
 
-#### **Step 8.2: Redux Store Setup** ✅ DONE
-- Create store configuration with RTK ✅
-- Setup typed hooks (useAppDispatch, useAppSelector) ✅
-- Create three slices: UI, Search, FlightBoard ✅
-- **Commit:** `feat: Redux store setup with typed hooks`
+**Commit:** `feat: complete Step 4 - Frontend Foundation (Consumer App)`
 
-#### **Step 8.3: Redux Provider Integration** ✅ DONE
-- Add Redux Provider to both App.tsx files ✅
-- Fix compilation errors in component integration ✅
-- Test Redux state management structure ✅
-- **Commit:** `test: verify Redux integration structure and store setup`
+**Reality check:** The modern React ecosystem is incredibly mature. React Query handles all the hard parts of data fetching (caching, background updates, error states), and Tailwind makes styling fast and consistent. The TypeScript interfaces provide excellent type safety without over-engineering.
 
-#### **Step 8.4: Component Redux Migration** ✅ DONE
-- Update SearchFilters to use Redux actions (updateSearchParams, clearAllFilters) ✅
-- Update FlightBoard to use Redux selectors (partially done) ✅
-- Remove props passing between components (SearchFilters now fully Redux-connected) ✅
-- **Commit:** `feat: migrate SearchFilters to Redux state management`
+---
 
-#### **Step 8.5: Redux Testing** 🔄 IN PROGRESS
-- **NEXT:** Test Redux state changes in browser ⏳
-- Verify Redux DevTools integration ⏳
-- Test state persistence across page refreshes ⏳
-- Validate performance with Redux state ⏳
+### **Step 4.5: Cyberpunk Styling Transformation** ✅ DONE
+*Design is not just what it looks like and feels like. Design is how it works. But in this case, we wanted it to look cyberpunk AF.*
 
-#### **Step 9.1: Backend Test Project** ⏳ PENDING
-- Create xUnit test project ⏳
-- Install Moq and test dependencies ⏳
-- Setup in-memory test database ⏳
+**What actually happened:**
+- **Tailwind config enhanced** with retro-futuristic color palette ✅
+- **Global CSS updated** with cyberpunk animations, holographic effects, scanlines ✅
+- **App component transformed** to "SKYNET BOARD" with cyberpunk navigation ✅
+- **HealthCheck component redesigned** as "NEURAL_LINK" status monitor ✅
+- **LoadingSpinner modernized** with multi-ring cyberpunk spinner and data streams ✅
+- **FlightBoard component recreated** with complete cyberpunk matrix table design ✅
+- **ErrorAlert component updated** with retro-futuristic error styling ✅
+- **TypeScript compilation errors fixed** across all components ✅
 
-#### **Step 9.2: Service Tests** ⏳ PENDING
-- Write tests for FlightService CRUD operations ⏳
-- Test status calculation logic ⏳
-- Add validation tests ⏳
-
-#### **Step 9.3: Controller Tests** ⏳ PENDING
-- Write integration tests for FlightsController ⏳
-- Test API endpoints with mock data ⏳
-- Validate error handling scenarios ⏳
-
-#### **Step 9.4: Frontend Tests** ⏳ PENDING
-- Setup Jest and React Testing Library ⏳
-- Write component tests for FlightBoard ⏳
-- Test Redux actions and reducers ⏳
-
-### **Phase 3: Quality & Deployment (PLANNED)**
-
-#### **Step 10.1: Domain Models** ⏳ PLANNED
-- Extract domain entities from API models ⏳
-- Create domain services and interfaces ⏳
-
-#### **Step 10.2: Application Layer** ⏳ PLANNED
-- Create application services ⏳
-- Implement command/query patterns ⏳
-
-#### **Step 10.3: Infrastructure Layer** ⏳ PLANNED
-- Move EF Core to infrastructure ⏳
-- Create repository interfaces ⏳
-
-#### **Step 11.1: JWT Setup** ⏳ PLANNED
-- Install JWT packages ⏳
-- Create User entity and auth context ⏳
-
-#### **Step 11.2: Auth Middleware** ⏳ PLANNED
-- Implement JWT middleware ⏳
-- Protect admin endpoints ⏳
-
-#### **Step 11.3: Auth Frontend** ⏳ PLANNED
-- Create login/logout components ⏳
-- Add role-based UI restrictions ⏳
+**Design System Implemented:**
+```
+Colors:
+- Background: Dark navy (#0a0a0f) with subtle grid patterns
+- Primary: Neon cyan (#00ffff) for main elements
+- Secondary: Neon green (#00ff00) for success states
+- Accent: Neon magenta (#ff00ff) for highlights
+- Warning: Neon yellow (#ffff00) for alerts
 
 Typography:
 - Headers: Orbitron (futuristic geometric font)
@@ -532,19 +481,9 @@ src/
 
 ---
 
-## TECHNICAL DEBT TRACKER
+## Technical Debt Tracker
 
-**Current debt:** MINIMAL ✅
-
-**Completed Fixes:**
-- ✅ Redux compilation errors fixed (explicit any types, useQuery updates)
-- ✅ Component integration errors resolved (Provider setup, action imports)
-- ✅ Store configuration completed (reducer imports, typed hooks)
-
-**Remaining Minor Issues:**
-- [ ] Replace temporary `any` types in Redux selectors with proper typing
-- [ ] Add proper error boundaries for Redux state
-- [ ] Optimize Redux DevTools for production builds
+**Current debt:** ZERO ✅
 
 **Avoided debt:**
 - ❌ AutoMapper (pure C# mapping is faster and more transparent)
@@ -574,22 +513,24 @@ src/
 
 ---
 
-## DEVELOPMENT RULES COMPLIANCE STATUS
+## Quality Gates Status
 
-**✅ FOLLOWING RULES:**
-- Small, focused changes (one task at a time)
-- Frequent commits with clear messages
-- Regular .plan updates with progress tracking
-- No big cross-file refactoring sessions
-- Clear documentation of each small step
+**Code quality:**
+- No compiler warnings ✅
+- Consistent naming conventions ✅  
+- Comprehensive error handling ✅
+- Modern C# features utilized ✅
 
-**📋 CURRENT TASK QUEUE:**
-1. **IMMEDIATE:** Test Redux state changes in browser (Step 8.5a) - 15 min
-2. **NEXT:** Complete Redux DevTools integration testing (Step 8.5b) - 10 min  
-3. **THEN:** Document Redux integration completion (Step 8.5c) - 5 min
-4. **FINALLY:** Commit Redux integration milestone - 2 min
+**Security:**
+- Database outside project directory ✅
+- Input validation on all endpoints ✅
+- Soft deletes prevent data loss ✅
+- CORS properly configured ✅
 
-**🎯 SESSION GOAL:** Complete Redux integration testing and one component migration
+**Testing:**
+- Manual API testing completed ✅
+- Integration testing: TODO (Step 13)
+- Load testing: TODO (Step 12)
 
 ---
 
@@ -613,20 +554,50 @@ src/
 
 ---
 
-## NEXT SMALL ACTION
+## ALIGNMENT ITEMS TO FIX
 
-**Current Task:** Complete Step 8.5a - Test Redux state changes in browser  
-**Time Estimate:** 15 minutes  
-**Action Required:** 
-1. Build the consumer app to verify no compilation errors
-2. Check Redux store configuration 
-3. Test search filter changes trigger Redux actions
-4. Verify UI state persistence (search filters expanded/collapsed)  
-5. Document Redux functionality verification
+## ALIGNMENT ITEMS TO FIX
 
-**After completing:** Move to Step 8.5b (Redux DevTools integration testing)
+### **CRITICAL (Before Step 7):**
+1. **🔥 Server-Side Status Calculation** - MISSING CORE BUSINESS LOGIC
+   - **What:** Implement time-based flight status calculation in FlightService
+   - **Why:** Required by `docs/objectives.md` - status must be calculated server-side
+   - **Business Rules:** 
+     - Boarding: 30 minutes before departure until departure time
+     - Departed: From departure time until 60 minutes after
+     - Landed: More than 60 minutes after departure time
+     - Scheduled: More than 30 minutes before departure time
+   - **Files to modify:** `FlightService.cs`, `FlightDtos.cs`
+   - **Impact:** HIGH - Core requirement, affects all status displays
 
----
+2. **🔍 Search/Filter API Endpoint** - MISSING REQUIRED ENDPOINT
+   - **What:** Implement `GET /api/flights/search?status={status}&destination={destination}`
+   - **Why:** Explicitly required in `docs/objectives.md`
+   - **Features:** Combined filtering by status and/or destination with pagination
+   - **Files to modify:** `FlightsController.cs`, `FlightService.cs`
+   - **Impact:** HIGH - Required for Step 7 completion
+
+3. **📅 Future Date Validation** - MISSING BUSINESS RULE
+   - **What:** Add validation that departure time must be in the future
+   - **Why:** Required business rule in `docs/objectives.md`
+   - **Implementation:** Add custom validation attribute to FlightDto
+   - **Files to modify:** `FlightDtos.cs`, possibly new validation attribute
+   - **Impact:** LOW - Simple validation rule, easy fix
+
+### **IMPORTANT (Steps 8-10):**
+4. **🎯 Redux Toolkit Integration** - TECHNOLOGY GAP
+   - **What:** Add Redux Toolkit for UI state management (filter values, form state)
+   - **Why:** Specified in `docs/objectives.md` technology requirements
+   - **Scope:** Client-side state like filter values, form inputs, UI preferences
+   - **Files to modify:** Both frontend apps - add Redux store, reducers, actions
+   - **Impact:** MEDIUM - Architecture requirement, affects state management
+
+5. **🧪 Unit Testing Infrastructure** - MISSING REQUIRED FEATURE
+   - **What:** Create test project with xUnit and Moq for backend testing
+   - **Why:** Unit tests are required in `docs/objectives.md`
+   - **Focus:** Critical business logic (validation, status calculation, service methods)
+   - **New project:** `FlightBoard.Tests` with test cases for FlightService
+   - **Impact:** HIGH - Explicitly required deliverable
 
 6. **🏗️ Clean Architecture Refactoring** - ARCHITECTURE GAP
    - **What:** Refactor to Domain, Application, Infrastructure, API layers

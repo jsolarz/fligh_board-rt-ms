@@ -1,59 +1,68 @@
-// SearchFilters component - Cyberpunk search interface with Redux state management
-import React, { useEffect } from "react"
+// SearchFilters component - Cyberpunk search interface with advanced filtering
+import React, { useState, useEffect } from "react"
 import { FlightSearchDto, FlightStatus } from "../types/flight.types"
-import { useAppSelector, useAppDispatch } from "../store"
-import { 
-  updateSearchParams, 
-  clearAllFilters
-} from "../store/slices/searchSlice"
-import { setSearchFiltersExpanded } from "../store/slices/uiSlice"
 
 interface SearchFiltersProps {
+  searchParams: FlightSearchDto
+  onSearchChange: (params: FlightSearchDto) => void
   isLoading?: boolean
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
+  searchParams,
+  onSearchChange,
   isLoading = false,
 }) => {
-  const dispatch = useAppDispatch()
-  const searchParams = useAppSelector((state: any) => state.search.currentSearch)
-  const isExpanded = useAppSelector((state: any) => state.ui.searchFiltersExpanded)
+  const [localFilters, setLocalFilters] =
+    useState<FlightSearchDto>(searchParams)
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  // Debounce search to avoid excessive API calls
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      onSearchChange(localFilters)
+    }, 500)
+
+    return () => clearTimeout(debounceTimer)
+  }, [localFilters, onSearchChange])
 
   const handleFilterChange = (
     key: keyof FlightSearchDto,
     value: string | number | boolean | undefined
   ) => {
-    const updatedParams = {
-      ...searchParams,
+    setLocalFilters((prev) => ({
+      ...prev,
       [key]: value || undefined,
       page: 1, // Reset to first page when filters change
-    }
-    dispatch(updateSearchParams(updatedParams))
-  }
-  const clearFilters = () => {
-    dispatch(clearAllFilters())
+    }))
   }
 
-  const toggleExpanded = () => {
-    dispatch(setSearchFiltersExpanded(!isExpanded))
+  const clearFilters = () => {
+    const clearedFilters: FlightSearchDto = {
+      page: 1,
+      pageSize: searchParams.pageSize || 20,
+      type: searchParams.type, // Preserve flight type (departure/arrival)
+    }
+    setLocalFilters(clearedFilters)
   }
 
   const statusOptions = Object.values(FlightStatus)
 
   return (
     <div className="holographic rounded-lg border border-neon-cyan/30 mb-6 overflow-hidden">
-      {/* Search Header */}      <div
+      {/* Search Header */}
+      <div
         className="flex items-center justify-between p-4 bg-neon-cyan/5 border-b border-neon-cyan/30 cursor-pointer hover:bg-neon-cyan/10 transition-colors"
-        onClick={toggleExpanded}
+        onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center space-x-3">
           <div className="w-3 h-3 bg-neon-green rounded-full animate-pulse"></div>
           <span className="font-cyber text-neon-cyan font-bold uppercase tracking-wide">
             SEARCH_MATRIX
           </span>
-          {(searchParams.destination ||
-            searchParams.status ||
-            searchParams.flightNumber) && (
+          {(localFilters.destination ||
+            localFilters.status ||
+            localFilters.flightNumber) && (
             <span className="px-2 py-1 bg-neon-cyan/20 rounded text-xs text-neon-cyan">
               FILTERS_ACTIVE
             </span>
@@ -100,9 +109,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             <div className="space-y-2">
               <label className="block text-sm font-cyber text-neon-cyan uppercase tracking-wide">
                 Flight_Number
-              </label>              <input
+              </label>
+              <input
                 type="text"
-                value={searchParams.flightNumber || ""}
+                value={localFilters.flightNumber || ""}
                 onChange={(e) =>
                   handleFilterChange("flightNumber", e.target.value)
                 }
@@ -119,7 +129,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               </label>
               <input
                 type="text"
-                value={searchParams.destination || ""}
+                value={localFilters.destination || ""}
                 onChange={(e) =>
                   handleFilterChange("destination", e.target.value)
                 }
@@ -127,13 +137,15 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 className="w-full cyber-input"
                 disabled={isLoading}
               />
-            </div>            {/* Status Filter */}
+            </div>
+
+            {/* Status Filter */}
             <div className="space-y-2">
               <label className="block text-sm font-cyber text-neon-cyan uppercase tracking-wide">
                 Status
               </label>
               <select
-                value={searchParams.status || ""}
+                value={localFilters.status || ""}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
                 className="w-full cyber-select"
                 disabled={isLoading}
@@ -154,20 +166,22 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               </label>
               <input
                 type="text"
-                value={searchParams.airline || ""}
+                value={localFilters.airline || ""}
                 onChange={(e) => handleFilterChange("airline", e.target.value)}
                 placeholder="e.g., United, Delta"
                 className="w-full cyber-input"
                 disabled={isLoading}
               />
-            </div>            {/* Origin Filter */}
+            </div>
+
+            {/* Origin Filter */}
             <div className="space-y-2">
               <label className="block text-sm font-cyber text-neon-cyan uppercase tracking-wide">
                 Origin
               </label>
               <input
                 type="text"
-                value={searchParams.origin || ""}
+                value={localFilters.origin || ""}
                 onChange={(e) => handleFilterChange("origin", e.target.value)}
                 placeholder="e.g., JFK, DFW"
                 className="w-full cyber-input"
@@ -183,7 +197,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <label className="cyber-checkbox-container">
                 <input
                   type="checkbox"
-                  checked={searchParams.isDelayed || false}
+                  checked={localFilters.isDelayed || false}
                   onChange={(e) =>
                     handleFilterChange("isDelayed", e.target.checked)
                   }
@@ -207,9 +221,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <div className="space-y-2">
                 <label className="block text-sm font-cyber text-neon-green uppercase tracking-wide">
                   From_Date
-                </label>                <input
+                </label>
+                <input
                   type="datetime-local"
-                  value={searchParams.fromDate || ""}
+                  value={localFilters.fromDate || ""}
                   onChange={(e) =>
                     handleFilterChange("fromDate", e.target.value)
                   }
@@ -223,7 +238,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 </label>
                 <input
                   type="datetime-local"
-                  value={searchParams.toDate || ""}
+                  value={localFilters.toDate || ""}
                   onChange={(e) => handleFilterChange("toDate", e.target.value)}
                   className="w-full cyber-input"
                   disabled={isLoading}
