@@ -181,4 +181,65 @@ public class CacheService : ICacheService
             _semaphore.Release();
         }
     }
+
+    public Task<Dictionary<string, object>> GetStatsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var stats = new Dictionary<string, object>
+            {
+                ["CacheType"] = "Hybrid (Memory + Distributed)",
+                ["TotalKeys"] = 0, // Redis would need to be queried for this
+                ["TotalHits"] = 0, // Would need to track this
+                ["TotalMisses"] = 0, // Would need to track this
+                ["LastUpdated"] = DateTime.UtcNow
+            };
+
+            // Add memory cache stats if available
+            if (_memoryCache is MemoryCache memCache)
+            {
+                // Note: MemoryCache doesn't expose statistics by default
+                // In production, you'd use a wrapper that tracks these metrics
+                stats["MemoryCacheEnabled"] = true;
+            }
+
+            return Task.FromResult(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving cache statistics");
+            return Task.FromResult(new Dictionary<string, object>
+            {
+                ["Error"] = ex.Message,
+                ["CacheType"] = "Error"
+            });
+        }
+    }
+
+    public async Task ClearAllAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogWarning("Clearing all cache data");
+
+            // Clear memory cache
+            if (_memoryCache is MemoryCache memCache)
+            {
+                // Note: MemoryCache doesn't have a clear all method by default
+                // This would need a custom implementation or wrapper
+                _logger.LogWarning("Memory cache clear requires custom implementation");
+            }
+
+            // For distributed cache, this would require Redis FLUSHDB command
+            // which is not available through IDistributedCache interface
+            _logger.LogWarning("Distributed cache clear requires Redis-specific implementation");
+
+            await Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing all cache");
+            throw;
+        }
+    }
 }

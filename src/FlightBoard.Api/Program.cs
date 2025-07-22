@@ -102,9 +102,20 @@ builder.Services.AddScoped<IUserDataAccess, UserDataAccess>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
 builder.Services.AddScoped<IPerformanceService, PerformanceService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
 
 // Add memory cache for basic caching
 builder.Services.AddMemoryCache();
+
+// Add distributed cache (falls back to memory cache if Redis not available)
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.InstanceName = "FlightBoard";
+});
+
+// Register fallback cache service
+builder.Services.AddScoped<FallbackMemoryCacheService>();
 
 builder.Services.AddiFXServices();
 

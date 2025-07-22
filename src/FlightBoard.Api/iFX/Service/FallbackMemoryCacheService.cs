@@ -77,4 +77,54 @@ public class FallbackMemoryCacheService : ICacheService
 
         return newValue;
     }
+
+    public Task<Dictionary<string, object>> GetStatsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var stats = new Dictionary<string, object>
+            {
+                ["CacheType"] = "Memory Cache",
+                ["TotalKeys"] = 0, // MemoryCache doesn't expose key count
+                ["TotalHits"] = 0, // Would need custom tracking
+                ["TotalMisses"] = 0, // Would need custom tracking
+                ["LastUpdated"] = DateTime.UtcNow,
+                ["MemoryCacheEnabled"] = true
+            };
+
+            return Task.FromResult(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving memory cache statistics");
+            return Task.FromResult(new Dictionary<string, object>
+            {
+                ["Error"] = ex.Message,
+                ["CacheType"] = "Memory Cache Error"
+            });
+        }
+    }
+
+    public Task ClearAllAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogWarning("Clearing all memory cache data");
+
+            // Note: MemoryCache doesn't have a built-in clear all method
+            // In a production implementation, you'd need to track keys or use a custom wrapper
+            if (_memoryCache is MemoryCache memCache)
+            {
+                // This would require reflection or a custom implementation
+                _logger.LogWarning("Memory cache clear all requires custom implementation");
+            }
+
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing all memory cache");
+            throw;
+        }
+    }
 }

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using FlightBoard.Api.Data;
 using FlightBoard.Api.Models;
 using FlightBoard.Api.DTOs;
-using FlightBoard.Api.iFX.Contract;
+using FlightBoard.Api.iFX.Contract.Service;
 using FlightBoard.Api.iFX.Utility;
 
 namespace FlightBoard.Api.DataAccess.Flight;

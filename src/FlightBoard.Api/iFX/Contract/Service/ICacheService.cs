@@ -37,4 +37,14 @@ public interface ICacheService
     /// Get or set cache value with factory function (cache-aside pattern)
     /// </summary>
     Task<T?> GetOrSetAsync<T>(string key, Func<Task<T?>> factory, TimeSpan? expiration = null, CancellationToken cancellationToken = default) where T : class;
+    
+    /// <summary>
+    /// Get cache statistics for performance monitoring
+    /// </summary>
+    Task<Dictionary<string, object>> GetStatsAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Clear all cached data (admin operation)
+    /// </summary>
+    Task ClearAllAsync(CancellationToken cancellationToken = default);
 }

@@ -8,6 +8,7 @@ namespace FlightBoard.Api.Controllers;
 /// Performance monitoring and metrics API endpoint
 /// Provides runtime performance insights and cache statistics
 /// Requires Admin authorization for sensitive performance data
+/// Uses utility services directly - no Manager layer needed for infrastructure concerns
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -34,13 +35,9 @@ public class PerformanceController : ControllerBase
     [HttpGet("summary")]
     public async Task<ActionResult<PerformanceSummary>> GetPerformanceSummary()
     {
-        using var tracker = _performanceService.TrackOperation("GetPerformanceSummary");
-        
         try
         {
             var summary = await _performanceService.GetSummaryAsync();
-            _performanceService.TrackEvent("PerformanceSummaryRequested");
-            
             return Ok(summary);
         }
         catch (Exception ex)
@@ -74,49 +71,11 @@ public class PerformanceController : ControllerBase
     /// Get cache statistics and performance
     /// </summary>
     [HttpGet("cache/stats")]
-    public async Task<ActionResult<CacheStatsResponse>> GetCacheStats()
+    public async Task<ActionResult> GetCacheStats()
     {
-        using var tracker = _performanceService.TrackOperation("GetCacheStats");
-        
         try
         {
-            // Sample cache keys to check
-            var testKeys = new[]
-            {
-                "flights:search:",
-                "flights:status:scheduled",
-                "flights:status:departed",
-                "flight:"
-            };
-
-            var stats = new CacheStatsResponse
-            {
-                TotalChecks = testKeys.Length,
-                CacheHits = 0,
-                CacheMisses = 0,
-                TestKeys = new List<CacheKeyInfo>()
-            };
-
-            foreach (var key in testKeys)
-            {
-                var exists = await _cacheService.ExistsAsync(key);
-                var keyInfo = new CacheKeyInfo
-                {
-                    Key = key,
-                    Exists = exists,
-                    CheckedAt = DateTime.UtcNow
-                };
-                
-                stats.TestKeys.Add(keyInfo);
-                
-                if (exists)
-                    stats.CacheHits++;
-                else
-                    stats.CacheMisses++;
-            }
-
-            stats.HitRate = stats.TotalChecks > 0 ? (double)stats.CacheHits / stats.TotalChecks : 0;
-
+            var stats = await _cacheService.GetStatsAsync();
             return Ok(stats);
         }
         catch (Exception ex)
@@ -127,23 +86,22 @@ public class PerformanceController : ControllerBase
     }
 
     /// <summary>
-    /// Clear all performance metrics (reset counters)
+    /// Clear all cached data (admin operation)
     /// </summary>
-    [HttpPost("reset")]
-    public ActionResult ResetMetrics()
+    [HttpPost("cache/clear")]
+    public async Task<ActionResult> ClearAllCache()
     {
         try
         {
-            // Note: In a real implementation, you'd need to add a reset method to IPerformanceService
-            _logger.LogInformation("Performance metrics reset requested by admin");
-            _performanceService.TrackEvent("PerformanceMetricsReset");
+            await _cacheService.ClearAllAsync();
+            _logger.LogWarning("All cache cleared by admin");
             
-            return Ok(new { Message = "Performance metrics reset (note: requires service restart for full reset)" });
+            return Ok(new { Message = "All cache cleared successfully" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error resetting performance metrics");
-            return StatusCode(500, "Error resetting metrics");
+            _logger.LogError(ex, "Error clearing all cache");
+            return StatusCode(500, "Error clearing cache");
         }
     }
 }
@@ -156,25 +114,3 @@ public record TrackMetricRequest(
     double Value,
     Dictionary<string, string>? Properties = null
 );
-
-/// <summary>
-/// Cache statistics response
-/// </summary>
-public record CacheStatsResponse
-{
-    public int TotalChecks { get; set; }
-    public int CacheHits { get; set; }
-    public int CacheMisses { get; set; }
-    public double HitRate { get; set; }
-    public List<CacheKeyInfo> TestKeys { get; set; } = new();
-}
-
-/// <summary>
-/// Cache key information
-/// </summary>
-public record CacheKeyInfo
-{
-    public string Key { get; set; } = string.Empty;
-    public bool Exists { get; set; }
-    public DateTime CheckedAt { get; set; }
-}

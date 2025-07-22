@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
-using FlightBoard.Api.iFX.Contract;
+using FlightBoard.Api.iFX.Contract.Service;
 using System.Text.RegularExpressions;
 using System.Collections.Concurrent;
 
