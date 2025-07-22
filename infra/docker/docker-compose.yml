@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # Flight Board API Backend
+  flightboard-api:
+    build:
+      context: ../../..
+      dockerfile: infra/docker/api/Dockerfile
+    container_name: flightboard-api
+    ports:
+      - "5183:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/flightboard.db
+      - Jwt__Secret=SuperSecureJwtSecretKeyForProductionUse2024!
+      - Jwt__Issuer=FlightBoard.Api
+      - Jwt__Audience=FlightBoard.Frontend
+      - Jwt__AccessTokenExpirationMinutes=15
+      - Jwt__RefreshTokenExpirationDays=7
+    volumes:
+      - flightboard-data:/app/data
+    networks:
+      - flightboard-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Consumer Frontend (Cyberpunk Style)
+  flightboard-consumer:
+    build:
+      context: ../../../src/frontend/consumer
+      dockerfile: ../../../infra/docker/frontend/consumer.Dockerfile
+    container_name: flightboard-consumer
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_BASE_URL=http://flightboard-api:8080
+      - REACT_APP_SIGNALR_HUB_URL=http://flightboard-api:8080/flighthub
+    networks:
+      - flightboard-network
+    depends_on:
+      - flightboard-api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Backoffice Frontend (BBS Terminal Style)
+  flightboard-backoffice:
+    build:
+      context: ../../../src/frontend/backoffice
+      dockerfile: ../../../infra/docker/frontend/backoffice.Dockerfile
+    container_name: flightboard-backoffice
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_BASE_URL=http://flightboard-api:8080
+      - REACT_APP_SIGNALR_HUB_URL=http://flightboard-api:8080/flighthub
+    networks:
+      - flightboard-network
+    depends_on:
+      - flightboard-api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  # Persistent volume for SQLite database - critical for data persistence
+  flightboard-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../../data
+
+networks:
+  flightboard-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

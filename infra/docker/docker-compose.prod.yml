@@ -1,0 +1,154 @@
+# Production Docker Compose for Cloud Deployment
+version: '3.8'
+
+services:
+  # Flight Board API Backend
+  flightboard-api:
+    build:
+      context: ../../..
+      dockerfile: infra/docker/api/Dockerfile
+    container_name: flightboard-api
+    ports:
+      - "5183:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      # Cloud database - can be overridden with external DB
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:-Data Source=/app/data/flightboard.db}
+      # JWT settings from environment variables for security
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER:-FlightBoard.Api}
+      - Jwt__Audience=${JWT_AUDIENCE:-FlightBoard.Frontend}
+      - Jwt__AccessTokenExpirationMinutes=${JWT_ACCESS_EXPIRY:-15}
+      - Jwt__RefreshTokenExpirationDays=${JWT_REFRESH_EXPIRY:-7}
+      # Cloud logging
+      - ASPNETCORE_LOGGING__LOGLEVEL__DEFAULT=${LOG_LEVEL:-Information}
+    volumes:
+      # Only mount if using SQLite (for cloud, this might be external DB)
+      - flightboard-data:/app/data
+    networks:
+      - flightboard-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Consumer Frontend (Cyberpunk Style)
+  flightboard-consumer:
+    build:
+      context: ../../../src/frontend/consumer
+      dockerfile: ../../../infra/docker/frontend/consumer.Dockerfile
+    container_name: flightboard-consumer
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Use internal service name for backend communication
+      - REACT_APP_API_BASE_URL=${API_PUBLIC_URL:-http://localhost:5183}
+      - REACT_APP_SIGNALR_HUB_URL=${SIGNALR_PUBLIC_URL:-http://localhost:5183/flighthub}
+    networks:
+      - flightboard-network
+    depends_on:
+      - flightboard-api
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backoffice Frontend (BBS Terminal Style)
+  flightboard-backoffice:
+    build:
+      context: ../../../src/frontend/backoffice
+      dockerfile: ../../../infra/docker/frontend/backoffice.Dockerfile
+    container_name: flightboard-backoffice
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      # Use internal service name for backend communication
+      - REACT_APP_API_BASE_URL=${API_PUBLIC_URL:-http://localhost:5183}
+      - REACT_APP_SIGNALR_HUB_URL=${SIGNALR_PUBLIC_URL:-http://localhost:5183/flighthub}
+    networks:
+      - flightboard-network
+    depends_on:
+      - flightboard-api
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Load Balancer (Production)
+  nginx:
+    image: nginx:alpine
+    container_name: flightboard-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - flightboard-network
+    depends_on:
+      - flightboard-api
+      - flightboard-consumer
+      - flightboard-backoffice
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  # Persistent volume for SQLite database
+  # In cloud deployment, this could be replaced with external database
+  flightboard-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DB_VOLUME_PATH:-../../../data}
+
+networks:
+  flightboard-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

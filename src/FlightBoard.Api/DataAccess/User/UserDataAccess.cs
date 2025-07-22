@@ -94,7 +94,7 @@ public class UserDataAccess : IUserDataAccess
     public async Task<bool> ExistsAsync(string username, string email)
     {
         return await _context.Users
-            .AnyAsync(u => u.Username.ToLower() == username.ToLower() || 
+            .AnyAsync(u => u.Username.ToLower() == username.ToLower() ||
                           u.Email.ToLower() == email.ToLower());
     }
 
@@ -131,7 +131,7 @@ public class UserDataAccess : IUserDataAccess
     public async Task<UserModel?> GetByRefreshTokenAsync(string refreshToken)
     {
         return await _context.Users
-            .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken && 
+            .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken &&
                                     u.RefreshTokenExpiryTime > DateTime.UtcNow);
     }
 

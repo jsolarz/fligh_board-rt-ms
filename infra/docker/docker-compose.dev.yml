@@ -1,0 +1,87 @@
+# Development Docker Compose
+# For local development with hot reload and debugging
+version: '3.8'
+
+services:
+  # Flight Board API Backend (Development)
+  flightboard-api-dev:
+    build:
+      context: ../../..
+      dockerfile: infra/docker/api/Dockerfile.dev
+      target: development
+    container_name: flightboard-api-dev
+    ports:
+      - "5183:8080"
+      - "5184:8081" # HTTPS port
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ConnectionStrings__DefaultConnection=Data Source=/app/Data/flightboard.db
+      - Jwt__Secret=DevSecretKeyForLocalDevelopment2024!
+      - Jwt__Issuer=FlightBoard.Api
+      - Jwt__Audience=FlightBoard.Frontend
+      - Jwt__AccessTokenExpirationMinutes=60
+      - Jwt__RefreshTokenExpirationDays=30
+    volumes:
+      - ../../../src:/app/src:cached
+      - ../../../Data:/app/Data
+      - flightboard-dev-data:/app/Data
+    networks:
+      - flightboard-dev-network
+    restart: unless-stopped
+
+  # Consumer Frontend (Development with Hot Reload)
+  flightboard-consumer-dev:
+    build:
+      context: ../../../src/frontend/consumer
+      dockerfile: ../../../infra/docker/frontend/consumer.Dockerfile.dev
+      target: development
+    container_name: flightboard-consumer-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_BASE_URL=http://localhost:5183
+      - REACT_APP_SIGNALR_HUB_URL=http://localhost:5183/flighthub
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ../../../src/frontend/consumer:/app:cached
+      - /app/node_modules
+    networks:
+      - flightboard-dev-network
+    depends_on:
+      - flightboard-api-dev
+    restart: unless-stopped
+
+  # Backoffice Frontend (Development with Hot Reload)
+  flightboard-backoffice-dev:
+    build:
+      context: ../../../src/frontend/backoffice
+      dockerfile: ../../../infra/docker/frontend/backoffice.Dockerfile.dev
+      target: development
+    container_name: flightboard-backoffice-dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_BASE_URL=http://localhost:5183
+      - REACT_APP_SIGNALR_HUB_URL=http://localhost:5183/flighthub
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ../../../src/frontend/backoffice:/app:cached
+      - /app/node_modules
+    networks:
+      - flightboard-dev-network
+    depends_on:
+      - flightboard-api-dev
+    restart: unless-stopped
+
+volumes:
+  flightboard-dev-data:
+    driver: local
+
+networks:
+  flightboard-dev-network:
+    driver: bridge
