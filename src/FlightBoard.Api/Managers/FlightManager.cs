@@ -39,9 +39,26 @@ public class FlightManager : IFlightManager
     /// </summary>
     public async Task<PagedResponse<FlightDto>> GetFlightsAsync(FlightSearchDto searchDto)
     {
+        using var activity = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["Operation"] = "GetFlights",
+            ["SearchCriteria"] = new
+            {
+                searchDto.FlightNumber,
+                searchDto.Destination,
+                searchDto.Status,
+                searchDto.Airline,
+                searchDto.Origin,
+                searchDto.IsDelayed,
+                searchDto.Page,
+                searchDto.PageSize
+            }
+        });
+
         try
         {
-            _logger.LogInformation("Getting flights with search criteria");
+            _logger.LogInformation("Getting flights with search criteria: {SearchCriteria}",
+                new { searchDto.FlightNumber, searchDto.Destination, searchDto.Status, searchDto.Airline });
 
             // Get base query from resource access
             var query = await _flightDataAccess.GetFlightsQueryAsync();

@@ -49,8 +49,11 @@ public class PerformanceMonitoringMiddleware
                         context.Request.Method, path, elapsedMs, statusCode);
                 }
 
-                // Add custom header with response time
-                context.Response.Headers.TryAdd("X-Response-Time-Ms", elapsedMs.ToString());
+                // Add custom header with response time only if response hasn't started
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.Headers.TryAdd("X-Response-Time-Ms", elapsedMs.ToString());
+                }
             }
         }
     }

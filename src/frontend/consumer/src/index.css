@@ -281,206 +281,397 @@ body::after {
   }
 }
 
-/* Additional cyberpunk utilities */
-.cyber-button-sm {
-  @apply relative px-3 py-1 bg-transparent border font-mono text-xs uppercase tracking-wider;
-  @apply transition-all duration-300 hover:scale-105;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(0, 255, 255, 0.1) 50%,
-    transparent 70%
-  );
-  clip-path: polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
-}
+/* ===== STEP 14 BONUS FEATURES: ENHANCED CYBERPUNK ANIMATIONS ===== */
 
-.cyber-button-sm:hover {
-  text-shadow: 0 0 10px currentColor;
-  box-shadow: 0 0 15px currentColor;
-}
-
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
-}
-
-.animate-scanlines {
-  animation: scanlines 2s linear infinite;
-}
-
-.font-cyber {
-  font-family: "Orbitron", monospace;
-}
-
-/* Shadow utilities */
-.shadow-neon-sm {
-  box-shadow: 0 0 10px currentColor;
-}
-
-.shadow-neon-md {
-  box-shadow: 0 0 20px currentColor;
-}
-
-.shadow-neon-lg {
-  box-shadow: 0 0 30px currentColor;
-}
-
-/* Additional animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scanlines {
+/* Matrix digital rain effect for loading states */
+@keyframes digitalRain {
   0% {
-    transform: translateY(-100%);
+    transform: translateY(-100vh);
+    opacity: 1;
   }
   100% {
     transform: translateY(100vh);
+    opacity: 0;
   }
 }
 
-/* Cyberpunk form input styling */
-.cyber-input {
+.matrix-rain {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  border-radius: 0.375rem;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.6),
-    rgba(26, 26, 46, 0.3)
-  );
-  backdrop-filter: blur(5px);
-  box-shadow: inset 0 1px 3px rgba(0, 255, 255, 0.1);
-  color: #00ffff;
-  font-family: "Fira Code", monospace;
-  font-size: 0.875rem;
-  transition: all 0.3s ease;
-}
-
-.cyber-input::placeholder {
-  color: #6b7280;
-}
-
-.cyber-input:focus {
-  outline: none;
-  border-color: #00ffff;
-  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2), 0 0 15px rgba(0, 255, 255, 0.3),
-    inset 0 1px 3px rgba(0, 255, 255, 0.2);
-  text-shadow: 0 0 5px #00ffff;
-}
-
-.cyber-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Cyberpunk select styling */
-.cyber-select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  border-radius: 0.375rem;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.6),
-    rgba(26, 26, 46, 0.3)
-  );
-  backdrop-filter: blur(5px);
-  box-shadow: inset 0 1px 3px rgba(0, 255, 255, 0.1);
-  color: #00ffff;
-  font-family: "Fira Code", monospace;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.cyber-select:focus {
-  outline: none;
-  border-color: #00ffff;
-  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2), 0 0 15px rgba(0, 255, 255, 0.3),
-    inset 0 1px 3px rgba(0, 255, 255, 0.2);
-  text-shadow: 0 0 5px #00ffff;
-}
-
-.cyber-select option {
-  background: #000000;
-  color: #00ffff;
-  font-family: "Fira Code", monospace;
-}
-
-/* Cyberpunk checkbox styling */
-.cyber-checkbox-container {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  position: relative;
-}
-
-.cyber-checkbox {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  height: 100%;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.cyber-checkbox-checkmark {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 1px solid rgba(0, 255, 255, 0.5);
-  border-radius: 0.25rem;
-  flex-shrink: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.6),
-    rgba(26, 26, 46, 0.3)
+.matrix-rain::before {
+  content: "01001000100110101011110010110101110100111010111001";
+  position: absolute;
+  top: -100%;
+  left: 10%;
+  color: rgba(0, 255, 0, 0.3);
+  font-family: "Fira Code", monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  animation: digitalRain 8s linear infinite;
+  animation-delay: 0s;
+}
+
+/* Holographic glitch effect for data updates */
+@keyframes holoGlitch {
+  0%, 90%, 100% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  10% {
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(90deg);
+  }
+  20% {
+    transform: translate(2px, -2px);
+    filter: hue-rotate(180deg);
+  }
+  30% {
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(270deg);
+  }
+  40% {
+    transform: translate(2px, 2px);
+    filter: hue-rotate(360deg);
+  }
+}
+
+.holo-glitch {
+  animation: holoGlitch 0.3s ease-in-out;
+}
+
+/* Enhanced data stream animation for flight updates */
+@keyframes dataStream {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%) scale(0.8);
+    filter: blur(2px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%) scale(1.2);
+    filter: blur(2px);
+  }
+}
+
+.data-stream {
+  animation: dataStream 2s ease-in-out;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(0, 255, 255, 0.1),
+    rgba(0, 255, 255, 0.3),
+    rgba(0, 255, 255, 0.1),
+    transparent
   );
-  backdrop-filter: blur(5px);
-  position: relative;
-  transition: all 0.3s ease;
 }
 
-.cyber-checkbox-checkmark::after {
+/* Neural network connection lines */
+@keyframes neuralPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.neural-connection {
+  position: relative;
+  overflow: hidden;
+}
+
+.neural-connection::before {
   content: "";
   position: absolute;
-  left: 6px;
-  top: 2px;
-  width: 6px;
-  height: 10px;
-  border: solid #00ffff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.cyber-checkbox:checked + .cyber-checkbox-checkmark {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 255, 255, 0.2),
-    rgba(0, 255, 255, 0.1)
+  top: 50%;
+  left: -100%;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    #00ffff,
+    #ff00ff,
+    #00ffff,
+    transparent
   );
-  border-color: #00ffff;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  animation: neuralPulse 3s ease-in-out infinite;
 }
 
-.cyber-checkbox:checked + .cyber-checkbox-checkmark::after {
-  opacity: 1;
-  filter: drop-shadow(0 0 3px #00ffff);
+/* Quantum particle effects for transitions */
+@keyframes quantumDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift-x, 100px), var(--drift-y, -50px)) scale(0);
+    opacity: 0;
+  }
 }
 
-.cyber-checkbox-container:hover .cyber-checkbox-checkmark {
-  border-color: #00ffff;
-  box-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
+.quantum-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #00ffff;
+  border-radius: 50%;
+  animation: quantumDrift 4s ease-out infinite;
+  box-shadow: 0 0 4px #00ffff;
+}
+
+.quantum-particle:nth-child(2) { animation-delay: 0.5s; --drift-x: -80px; --drift-y: 70px; }
+.quantum-particle:nth-child(3) { animation-delay: 1s; --drift-x: 120px; --drift-y: -30px; }
+.quantum-particle:nth-child(4) { animation-delay: 1.5s; --drift-x: -60px; --drift-y: -80px; }
+
+/* Enhanced flight row hover with energy field */
+@keyframes energyField {
+  0%, 100% {
+    box-shadow:
+      0 0 5px rgba(0, 255, 255, 0.3),
+      inset 0 0 10px rgba(0, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 15px rgba(0, 255, 255, 0.6),
+      0 0 25px rgba(0, 255, 255, 0.3),
+      inset 0 0 15px rgba(0, 255, 255, 0.2);
+  }
+}
+
+.flight-row-enhanced {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.flight-row-enhanced:hover {
+  animation: energyField 2s ease-in-out infinite;
+  background: linear-gradient(90deg,
+    rgba(0, 255, 255, 0.05),
+    rgba(0, 255, 255, 0.1),
+    rgba(0, 255, 255, 0.05)
+  );
+  transform: translateX(5px);
+}
+
+/* Status badge pulsing animations */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.status-scheduled {
+  animation: statusPulse 3s ease-in-out infinite;
+  background: linear-gradient(135deg, #00ff00, #00cc00);
+}
+
+.status-boarding {
+  animation: statusPulse 2s ease-in-out infinite;
+  background: linear-gradient(135deg, #ffff00, #cccc00);
+}
+
+.status-delayed {
+  animation: statusPulse 1.5s ease-in-out infinite;
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+}
+
+.status-departed {
+  animation: statusPulse 4s ease-in-out infinite;
+  background: linear-gradient(135deg, #0080ff, #0066cc);
+}
+
+/* Loading spinner enhancement with quantum rings */
+@keyframes quantumRing {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.quantum-loading {
+  position: relative;
+  display: inline-block;
+}
+
+.quantum-loading::before,
+.quantum-loading::after {
+  content: "";
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  animation: quantumRing 2s linear infinite;
+}
+
+.quantum-loading::before {
+  width: 40px;
+  height: 40px;
+  border-top-color: #00ffff;
+  border-right-color: #ff00ff;
+  top: -10px;
+  left: -10px;
+}
+
+.quantum-loading::after {
+  width: 60px;
+  height: 60px;
+  border-bottom-color: #00ff00;
+  border-left-color: #ffff00;
+  top: -20px;
+  left: -20px;
+  animation-direction: reverse;
+  animation-duration: 3s;
+}
+
+/* Real-time update notification animation */
+@keyframes updateNotification {
+  0% {
+    transform: translateY(-100%) scale(0.8);
+    opacity: 0;
+  }
+  10%, 90% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.update-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg,
+    rgba(0, 255, 255, 0.2),
+    rgba(0, 255, 255, 0.4)
+  );
+  border: 1px solid #00ffff;
+  border-radius: 8px;
+  padding: 12px 20px;
+  animation: updateNotification 4s ease-in-out;
+  z-index: 1000;
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.3),
+    inset 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+/* Terminal typing effect for forms */
+@keyframes terminalCursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.terminal-input {
+  position: relative;
+}
+
+.terminal-input::after {
+  content: "_";
+  color: #00ffff;
+  animation: terminalCursor 1s infinite;
+  margin-left: 2px;
+}
+
+.terminal-input:focus::after {
+  display: none;
+}
+
+/* Cyberpunk button enhancement with energy cascade */
+@keyframes energyCascade {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.cyber-button-enhanced {
+  background: linear-gradient(45deg,
+    #00ffff, #ff00ff, #00ffff, #ffff00, #00ffff
+  );
+  background-size: 300% 300%;
+  animation: energyCascade 3s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-button-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.cyber-button-enhanced:hover::before {
+  left: 100%;
+}
+
+/* Flight departure countdown animation */
+@keyframes countdown {
+  0% {
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+  }
+  25% {
+    color: #ffff00;
+    text-shadow: 0 0 10px #ffff00;
+  }
+  50% {
+    color: #ff8800;
+    text-shadow: 0 0 10px #ff8800;
+  }
+  75% {
+    color: #ff4400;
+    text-shadow: 0 0 10px #ff4400;
+  }
+  100% {
+    color: #ff0000;
+    text-shadow: 0 0 15px #ff0000;
+  }
+}
+
+.departure-countdown {
+  animation: countdown 1s ease-in-out infinite alternate;
+  font-weight: bold;
+  font-family: "Fira Code", monospace;
 }

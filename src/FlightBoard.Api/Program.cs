@@ -11,13 +11,35 @@ using FlightBoard.Api.DataAccess.Flight;
 using FlightBoard.Api.DataAccess.User;
 using FlightBoard.Api.Contract.Flight;
 using FlightBoard.Api.Contract.Auth;
+using FlightBoard.Api.Contract.Performance;
 using FlightBoard.Api.iFX;
 using FlightBoard.Api.iFX.Contract;
 using FlightBoard.Api.iFX.Contract.Service;
 using FlightBoard.Api.iFX.Service;
 using FlightBoard.Api.iFX.Middleware;
+using FlightBoard.Api.iFX.Engines;
+using Serilog;
+using Serilog.Events;
+
+// Configure Serilog for structured logging
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+    .MinimumLevel.Override("FlightBoard.Api", LogEventLevel.Debug)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "FlightBoard.Api")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .WriteTo.File("Logs/flightboard-.log",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}",
+        retainedFileCountLimit: 30)
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Use Serilog as the logging provider
+builder.Host.UseSerilog();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -87,12 +109,22 @@ builder.Services.AddScoped<DatabaseSeeder>();
 // Register iDesign Method components following proper layering
 
 // Managers (Use case orchestration layer) - using public contract interface
-builder.Services.AddScoped<IFlightManager, FlightManager>();
+builder.Services.AddScoped<FlightManager>();
+builder.Services.AddScoped<IFlightManager>(provider =>
+{
+    var baseManager = provider.GetRequiredService<FlightManager>();
+    var cacheService = provider.GetRequiredService<ICacheService>();
+    var perfService = provider.GetRequiredService<IPerformanceService>();
+    var logger = provider.GetRequiredService<ILogger<FlightBoard.Api.Manager.CachedFlightManager>>();
+    return new FlightBoard.Api.Manager.CachedFlightManager(baseManager, cacheService, perfService, logger);
+});
 builder.Services.AddScoped<IAuthManager, AuthManager>();
+builder.Services.AddScoped<IPerformanceManager, PerformanceManager>();
 
 // Engines (Business logic layer)
 builder.Services.AddScoped<IFlightEngine, FlightEngine>();
 builder.Services.AddScoped<IAuthEngine, AuthEngine>();
+builder.Services.AddScoped<IPerformanceEngine, PerformanceEngine>();
 
 // Data Access layer - following iDesign Method naming
 builder.Services.AddScoped<IFlightDataAccess, FlightDataAccess>();
@@ -227,3 +259,12 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 
 // Make the Program class accessible to integration tests
 public partial class Program { }
+
+// Ensure Serilog flushes logs on application shutdown
+public static class SerilogConfiguration
+{
+    public static void CloseAndFlush()
+    {
+        Log.CloseAndFlush();
+    }
+}
