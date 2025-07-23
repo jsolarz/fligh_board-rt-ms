@@ -30,7 +30,7 @@ const OptimisticFlightActions: React.FC<OptimisticFlightActionsProps> = ({
       triggerStatusUpdateEffect();
 
       // Call actual API
-      return FlightApiService.updateFlightStatus(flight.id, newStatus);
+      return FlightApiService.updateFlightStatus(flight.id, { status: newStatus });
     },
     onSuccess: (updatedFlight) => {
       // Real update received, update cache
@@ -71,7 +71,7 @@ const OptimisticFlightActions: React.FC<OptimisticFlightActionsProps> = ({
 
       triggerGateUpdateEffect();
 
-      return FlightApiService.updateFlightGate(flight.id, newGate);
+      return FlightApiService.updateFlight(flight.id, { gate: newGate });
     },
     onSuccess: (updatedFlight) => {
       queryClient.invalidateQueries({ queryKey: ['flights'] });

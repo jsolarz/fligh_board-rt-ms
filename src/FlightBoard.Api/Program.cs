@@ -152,7 +152,8 @@ builder.Services.AddScoped<FallbackMemoryCacheService>();
 builder.Services.AddiFXServices();
 
 // Legacy service registration (maintain for backwards compatibility during transition)
-builder.Services.AddScoped<FlightService>();
+// Legacy services - removed as part of iDesign architecture cleanup
+// builder.Services.AddScoped<FlightService>(); // Replaced by iDesign FlightManager/Engine/DataAccess
 
 // Add API controllers
 builder.Services.AddControllers();

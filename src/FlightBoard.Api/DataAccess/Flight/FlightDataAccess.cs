@@ -36,7 +36,7 @@ public class FlightDataAccess : IFlightDataAccess
         {
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHT_DETAIL, id);
             var cachedFlight = await _cacheService.GetAsync<Models.Flight>(cacheKey);
-            
+
             if (cachedFlight != null)
             {
                 _logger.LogDebug("Flight {FlightId} retrieved from cache", id);
@@ -44,13 +44,13 @@ public class FlightDataAccess : IFlightDataAccess
             }
 
             var flight = await _context.Flights.FindAsync(id);
-            
+
             if (flight != null)
             {
                 await _cacheService.SetAsync(cacheKey, flight, DefaultCacheDuration);
                 _logger.LogDebug("Flight {FlightId} cached for {Duration} minutes", id, DefaultCacheDuration.TotalMinutes);
             }
-            
+
             return flight;
         }
         catch (Exception ex)
@@ -66,10 +66,10 @@ public class FlightDataAccess : IFlightDataAccess
         {
             _context.Flights.Add(flight);
             await _context.SaveChangesAsync();
-            
+
             // Invalidate related caches
             await InvalidateFlightCaches();
-            
+
             _logger.LogDebug("Created flight {FlightNumber} and invalidated caches", flight.FlightNumber);
             return flight;
         }
@@ -86,14 +86,14 @@ public class FlightDataAccess : IFlightDataAccess
         {
             _context.Flights.Update(flight);
             await _context.SaveChangesAsync();
-            
+
             // Remove specific flight from cache
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHT_DETAIL, flight.Id);
             await _cacheService.RemoveAsync(cacheKey);
-            
+
             // Invalidate related caches
             await InvalidateFlightCaches();
-            
+
             _logger.LogDebug("Updated flight {FlightId} and invalidated caches", flight.Id);
             return flight;
         }
@@ -114,14 +114,14 @@ public class FlightDataAccess : IFlightDataAccess
             flight.IsDeleted = true;
             flight.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
-            
+
             // Remove specific flight from cache
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHT_DETAIL, id);
             await _cacheService.RemoveAsync(cacheKey);
-            
+
             // Invalidate related caches
             await InvalidateFlightCaches();
-            
+
             _logger.LogDebug("Deleted flight {FlightId} and invalidated caches", id);
             return true;
         }
@@ -149,6 +149,7 @@ public class FlightDataAccess : IFlightDataAccess
     public async Task<List<Models.Flight>> GetPagedFlightsAsync(IQueryable<Models.Flight> query, int page, int pageSize)
     {
         return await query
+            .OrderBy(f => f.ScheduledDeparture) // Add default ordering for pagination
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -169,7 +170,7 @@ public class FlightDataAccess : IFlightDataAccess
             var dateKey = date.ToString("yyyy-MM-dd");
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHTS_DEPARTURE, dateKey);
             var cachedFlights = await _cacheService.GetAsync<List<Models.Flight>>(cacheKey);
-            
+
             if (cachedFlights != null)
             {
                 _logger.LogDebug("Departure flights for {Date} retrieved from cache", dateKey);
@@ -178,15 +179,15 @@ public class FlightDataAccess : IFlightDataAccess
 
             var startDate = date.Date;
             var endDate = startDate.AddDays(1);
-            
+
             var flights = await _context.Flights
                 .Where(f => !f.IsDeleted && f.ScheduledDeparture >= startDate && f.ScheduledDeparture < endDate)
                 .OrderBy(f => f.ScheduledDeparture)
                 .ToListAsync();
-            
+
             await _cacheService.SetAsync(cacheKey, flights, DefaultCacheDuration);
             _logger.LogDebug("Cached {Count} departure flights for {Date}", flights.Count, dateKey);
-            
+
             return flights;
         }
         catch (Exception ex)
@@ -206,7 +207,7 @@ public class FlightDataAccess : IFlightDataAccess
             var dateKey = date.ToString("yyyy-MM-dd");
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHTS_ARRIVAL, dateKey);
             var cachedFlights = await _cacheService.GetAsync<List<Models.Flight>>(cacheKey);
-            
+
             if (cachedFlights != null)
             {
                 _logger.LogDebug("Arrival flights for {Date} retrieved from cache", dateKey);
@@ -215,15 +216,15 @@ public class FlightDataAccess : IFlightDataAccess
 
             var startDate = date.Date;
             var endDate = startDate.AddDays(1);
-            
+
             var flights = await _context.Flights
                 .Where(f => !f.IsDeleted && f.ScheduledArrival >= startDate && f.ScheduledArrival < endDate)
                 .OrderBy(f => f.ScheduledArrival)
                 .ToListAsync();
-            
+
             await _cacheService.SetAsync(cacheKey, flights, DefaultCacheDuration);
             _logger.LogDebug("Cached {Count} arrival flights for {Date}", flights.Count, dateKey);
-            
+
             return flights;
         }
         catch (Exception ex)
@@ -242,7 +243,7 @@ public class FlightDataAccess : IFlightDataAccess
         {
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHTS_STATUS, status);
             var cachedFlights = await _cacheService.GetAsync<List<Models.Flight>>(cacheKey);
-            
+
             if (cachedFlights != null)
             {
                 _logger.LogDebug("Flights with status {Status} retrieved from cache", status);
@@ -260,10 +261,10 @@ public class FlightDataAccess : IFlightDataAccess
                 .Where(f => !f.IsDeleted && f.Status == flightStatus)
                 .OrderBy(f => f.ScheduledDeparture)
                 .ToListAsync();
-            
+
             await _cacheService.SetAsync(cacheKey, flights, DefaultCacheDuration);
             _logger.LogDebug("Cached {Count} flights with status {Status}", flights.Count, status);
-            
+
             return flights;
         }
         catch (Exception ex)
