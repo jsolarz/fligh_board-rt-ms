@@ -251,7 +251,7 @@ const searchSlice = createSlice({
     clearAllFilters: (state) => {
       state.currentSearch = {
         page: 1,
-        pageSize: state.currentSearch.pageSize || 20,
+        pageSize: state.currentSearch.pageSize ?? 20,
         type: state.currentSearch.type, // Preserve flight type
       }
       state.quickFilters = {

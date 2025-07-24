@@ -104,7 +104,7 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
           result = await FlightApiService.getFlights(searchParams)
         }
 
-        dispatch(setFlights(result.data || []))
+        dispatch(setFlights(result.data ?? []))
         dispatch(setLoading(false))
         dispatch(setError(null))
 
@@ -121,8 +121,8 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
     retry: 3,
     staleTime: 5 * 60 * 1000,
   })
-  const flights = flightsData?.data || []
-  const pagination = flightsData || {
+  const flights = flightsData?.data ?? []
+  const pagination = flightsData ?? {
     page: 1,
     totalPages: 1,
     hasNext: false,
@@ -165,7 +165,7 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
           </h2>
           <div className="font-mono text-sm text-neon-cyan/80">
             <span className="text-neon-green">[ACTIVE]</span> {flights.length}{" "}
-            OF {pagination?.totalCount || 0} FLIGHTS_LOADED{" "}
+            OF {pagination?.totalCount ?? 0} FLIGHTS_LOADED{" "}
             <div className="flex items-center space-x-2 mt-1">
               <div
                 className={`w-2 h-2 rounded-full ${
@@ -273,7 +273,7 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-mono text-white">
-                      {flight.gate || "TBD"}
+                      {flight.gate ?? "TBD"}
                     </div>
                   </td>
                 </tr>

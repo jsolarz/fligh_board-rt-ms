@@ -154,7 +154,7 @@ const FlightList: React.FC<FlightListProps> = ({ onEdit, onDelete }) => {
                   {flight.status.toUpperCase()}
                 </span>
               </td>
-              <td>{flight.gate || "TBD"}</td>
+              <td>{flight.gate ?? "TBD"}</td>
               <td>
                 <div className="action-buttons">
                   <button onClick={() => onEdit(flight)} title="Edit flight">

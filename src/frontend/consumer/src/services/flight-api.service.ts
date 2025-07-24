@@ -12,7 +12,7 @@ import {
 } from "../types/flight.types"
 
 // API configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5183"
+const API_BASE_URL = process.env.REACT_APP_API_URL ?? "http://localhost:5183"
 const API_TIMEOUT = 10000 // 10 seconds
 
 // Create axios instance with default config
@@ -45,7 +45,7 @@ apiClient.interceptors.response.use(
   (error) => {
     console.error(
       "[API] Response error:",
-      error.response?.data || error.message
+      error.response?.data ?? error.message
     )
     // Transform error to consistent format
     if (error.response?.data?.message) {
@@ -57,7 +57,7 @@ apiClient.interceptors.response.use(
     } else if (error.code === "ECONNABORTED") {
       throw new Error("Request timeout. Please check your connection.")
     } else {
-      throw new Error(error.message || "An unexpected error occurred.")
+      throw new Error(error.message ?? "An unexpected error occurred.")
     }
   }
 )

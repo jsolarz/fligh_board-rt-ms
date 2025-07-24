@@ -32,7 +32,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   ) => {
     setLocalFilters((prev) => ({
       ...prev,
-      [key]: value || undefined,
+      [key]: value ?? undefined,
       page: 1, // Reset to first page when filters change
     }))
   }
@@ -40,7 +40,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   const clearFilters = () => {
     const clearedFilters: FlightSearchDto = {
       page: 1,
-      pageSize: searchParams.pageSize || 20,
+      pageSize: searchParams.pageSize ?? 20,
       type: searchParams.type, // Preserve flight type (departure/arrival)
     }
     setLocalFilters(clearedFilters)

@@ -13,7 +13,7 @@ import {
 } from "../types/flight.types"
 
 // API configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5183"
+const API_BASE_URL = process.env.REACT_APP_API_URL ?? "http://localhost:5183"
 const API_TIMEOUT = 10000 // 10 seconds
 
 // Create axios instance with default config
@@ -45,7 +45,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error(
-      `[ADMIN_API] ${error.response?.status || "Network"} error:`,
+      `[ADMIN_API] ${error.response?.status ?? "Network"} error:`,
       error.message
     )
     return Promise.reject(error)

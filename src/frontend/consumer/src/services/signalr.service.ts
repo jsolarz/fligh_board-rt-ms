@@ -73,7 +73,7 @@ export class SignalRService {
   }
 
   get connectionState(): string {
-    return this.connection?.state || "Disconnected"
+    return this.connection?.state ?? "Disconnected"
   }
 
   // Join specific groups for filtered updates
