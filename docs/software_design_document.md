@@ -3,97 +3,285 @@
 ## Introduction and Overview
 
 ### Project Summary
-The Real-Time Flight Board Management System is a full-stack application designed to provide live updates on flight information. It features a real-time flight board, a robust backend API, and a user-friendly frontend interface. The system is built using modern development practices and technologies to ensure scalability, maintainability, and performance.
+The Real-Time Flight Board Management System is a comprehensive full-stack application built with .NET 9 and React 18, designed to provide live flight information management. The system features dual frontend applications (consumer display and administrative backoffice), a high-performance backend API with caching and performance optimizations, and comprehensive real-time capabilities using SignalR.
 
 ### Objectives and Key Requirements
-- Provide real-time updates on flight statuses using SignalR.
-- Enable users to add, delete, search, and filter flights.
-- Ensure data integrity and validation for all flight operations.
-- Deliver a clean and intuitive user interface for seamless interaction.
-- Adhere to clean architecture principles and test-driven development.
+- Provide real-time flight status updates using SignalR with automatic reconnection
+- Enable comprehensive flight management through role-based access control (RBAC)
+- Implement enterprise-grade caching with Redis fallback to in-memory cache
+- Deliver themed user interfaces: cyberpunk consumer app and BBS terminal admin interface
+- Follow iDesign Method architectural principles with Manager/Engine/Accessor pattern
+- Provide containerized deployment with Docker and DevContainer support
+- Implement high-performance API with structured logging and health monitoring
 
 ### Document Overview
-This document outlines the design of the Real-Time Flight Board Management System. It includes details on system architecture, data design, interface design, component design, user interface design, assumptions, dependencies, and a glossary of terms. The purpose is to provide a comprehensive guide for development and future maintenance.
+This document outlines the design of the Real-Time Flight Board Management System as implemented in July 2025. It includes current system architecture, implemented components, deployment infrastructure, development environment setup, and operational features. The document serves as both implementation reference and maintenance guide.
 
 ### Background Information
-The system is intended for use in environments where real-time flight information is critical, such as airports or travel agencies. It leverages modern technologies like ASP.NET Core, React, and SignalR to deliver a responsive and reliable experience.
+The system is designed for airport environments requiring professional flight information management. It leverages cutting-edge technologies including .NET 9, React 18 with TypeScript, Redis caching, JWT authentication, and comprehensive Docker containerization. The architecture supports high-availability deployment and provides both public flight displays and administrative management interfaces.
 
 ---
 
 ## System Architecture
 
-### Updated High-Level Architecture Diagram
-The system architecture now consists of two distinct frontends and a shared backend:
+### Current High-Level Architecture Diagram
+The system architecture consists of three main tiers with comprehensive infrastructure support:
 
-1. **Backoffice Application**:
-   - A React-based administrative interface for managing flights.
-   - Communicates with the backend via REST APIs for CRUD operations.
+1. **Consumer Application (Port 3000)**:
+   - React 18 with TypeScript frontend featuring cyberpunk/futuristic styling
+   - Real-time flight board display for public use with search and filtering
+   - SignalR client for live updates and TanStack Query for API state management
+   - Responsive design optimized for both desktop and mobile viewing
 
-2. **Consumer Application**:
-   - A React-based user interface for viewing and searching flights.
-   - Communicates with the backend via REST APIs and SignalR for real-time updates.
+2. **Backoffice Application (Port 3001)**:
+   - React 18 with TypeScript administrative interface with BBS terminal styling
+   - Comprehensive flight management CRUD operations with form validation
+   - Role-based access controls and administrative dashboard features
+   - Redux Toolkit for complex state management and real-time synchronization
 
-3. **Backend**:
-   - An ASP.NET Core Web API that handles business logic, data validation, and real-time communication using SignalR.
-   - Implements role-based access control (RBAC) to restrict access to administrative endpoints.
+3. **Backend API (Port 5183/7022)**:
+   - .NET 9 Web API implementing iDesign Method architecture (Manager/Engine/Accessor)
+   - JWT authentication with role-based authorization and comprehensive security
+   - SignalR hubs for real-time broadcasting with connection management
+   - Entity Framework Core with SQLite database and advanced caching strategies
+   - iFX framework for cross-cutting concerns (logging, caching, performance monitoring)
 
-4. **Database**:
-   - A SQLite database managed through Entity Framework Core for storing flight and user data.
+4. **Infrastructure**:
+   - Redis distributed caching with in-memory fallback for high performance
+   - Docker containerization with development containers and production deployment
+   - Comprehensive logging with Serilog and structured log output
+   - Health checks, performance monitoring, and auto-recovery mechanisms
+
+```mermaid
+graph TB
+    subgraph "Frontend Applications"
+        A[Consumer App - React 18<br/>Cyberpunk Theme - Port 3000<br/>Public Flight Display]
+        B[Backoffice App - React 18<br/>BBS Terminal Theme - Port 3001<br/>Admin Management]
+    end
+    
+    subgraph "Backend Services"
+        C[Flight Board API - .NET 9<br/>Port 5183/7022<br/>JWT + SignalR + iDesign Method]
+        D[Redis Cache<br/>Distributed Caching<br/>Performance Layer]
+    end
+    
+    subgraph "Data Layer"
+        E[SQLite Database<br/>Entity Framework Core<br/>Flight & User Data]
+    end
+    
+    subgraph "Infrastructure"
+        F[Docker Containers<br/>DevContainers + Production<br/>Auto-deployment]
+        G[iFX Framework<br/>Cross-cutting Concerns<br/>Logging + Performance]
+    end
+    
+    A -->|REST API + SignalR| C
+    B -->|REST API + Admin Operations| C
+    C -->|EF Core| E
+    C -->|Caching Layer| D
+    C -->|Infrastructure Services| G
+    F -->|Container Management| A
+    F -->|Container Management| B
+    F -->|Container Management| C
+```
+
+### Implementation Architecture Pattern (iDesign Method)
 
 ```mermaid
 graph TD
-    A[Backoffice Application - React] -->|REST API| B[Backend - ASP.NET Core]
-    C[Consumer Application - React] -->|REST API & SignalR| B
-    B -->|Entity Framework Core| D[Database - SQLite]
+    subgraph "API Layer"
+        H[Controllers<br/>FlightController, AuthController<br/>Request/Response Handling]
+    end
+    
+    subgraph "Manager Layer (Use Case Orchestration)"
+        I[Flight Manager<br/>Use Case Implementation<br/>CachedFlightManager Decorator]
+        J[Auth Manager<br/>Authentication Logic<br/>JWT Token Management]
+        K[Performance Manager<br/>Monitoring & Metrics<br/>Health Check Coordination]
+    end
+    
+    subgraph "Engine Layer (Business Logic)"
+        L[Flight Engine<br/>Business Rules<br/>Status Calculations]
+        M[Auth Engine<br/>Security Logic<br/>Password Validation]
+        N[Performance Engine<br/>Metrics Collection<br/>Performance Analysis]
+    end
+    
+    subgraph "Data Access Layer"
+        O[Flight Data Access<br/>EF Core Repository<br/>Query Optimization]
+        P[User Data Access<br/>Authentication Data<br/>Role Management]
+    end
+    
+    subgraph "iFX Framework (Cross-cutting)"
+        Q[Cache Service<br/>Redis + Memory<br/>Fallback Strategy]
+        R[Performance Service<br/>Monitoring<br/>Telemetry]
+        S[JWT Service<br/>Token Management<br/>Security]
+    end
+    
+    H --> I
+    H --> J
+    H --> K
+    I --> L
+    I --> Q
+    J --> M
+    J --> S
+    K --> N
+    K --> R
+    L --> O
+    M --> P
+    Q --> E
+    R --> E
 ```
 
 ### Class Diagram for Core Components
 
 ```mermaid
 classDiagram
-    class Backend {
-        +RESTful APIs
+    class FlightBoardAPI {
+        +JWT Authentication
         +SignalR Hubs
-        +Authentication
-        +Authorization
+        +iDesign Architecture
+        +Performance Monitoring
+        +Health Checks
     }
-    class Database {
+    
+    class FlightManager {
+        <<Manager>>
+        +GetAllFlightsAsync()
+        +CreateFlightAsync()
+        +UpdateFlightAsync()
+        +DeleteFlightAsync()
+        +SearchFlightsAsync()
+    }
+    
+    class CachedFlightManager {
+        <<Decorator>>
+        +FlightManager baseManager
+        +ICacheService cacheService
+        +IPerformanceService perfService
+        +Enhanced caching operations
+    }
+    
+    class FlightEngine {
+        <<Engine>>
+        +CalculateFlightStatus()
+        +ValidateFlightData()
+        +ApplyBusinessRules()
+        +ProcessFlightUpdates()
+    }
+    
+    class FlightDataAccess {
+        <<Accessor>>
+        +FlightDbContext context
+        +GetFlightsAsync()
+        +CreateFlightAsync()
+        +UpdateFlightAsync()
+        +DeleteFlightAsync()
+    }
+    
+    class CacheService {
+        <<iFX Service>>
+        +Redis + Memory Cache
+        +GetAsync()
+        +SetAsync()
+        +RemoveAsync()
+        +Fallback Strategy
+    }
+    
+    class PerformanceService {
+        <<iFX Service>>
+        +TrackOperationAsync()
+        +MeasureExecutionTime()
+        +CollectMetrics()
+        +HealthMonitoring()
+    }
+    
+    class ConsumerApp {
+        +React 18 + TypeScript
+        +Cyberpunk Theme
+        +SignalR Client
+        +TanStack Query
+        +Real-time Flight Display
+    }
+    
+    class BackofficeApp {
+        +React 18 + TypeScript
+        +BBS Terminal Theme
+        +Redux Toolkit
+        +Admin CRUD Operations
+        +Role-based Access
+    }
+    
+    class FlightDatabase {
+        +SQLite + EF Core
         +Flights Table
         +Users Table
-        +Roles Table
-        +UserRoles Table
+        +Roles & Permissions
+        +Audit Logging
     }
-    class BackofficeApplication {
-        +Add Flight
-        +Update Flight
-        +Delete Flight
-        +View Logs
-    }
-    class ConsumerApplication {
-        +View Flights
-        +Search Flights
-        +Filter Flights
-    }
-    Backend --> Database : "Interacts with"
-    BackofficeApplication --> Backend : "Uses APIs"
-    ConsumerApplication --> Backend : "Uses APIs & SignalR"
+    
+    FlightBoardAPI --> FlightManager
+    FlightManager <|-- CachedFlightManager
+    CachedFlightManager --> CacheService
+    CachedFlightManager --> PerformanceService
+    FlightManager --> FlightEngine
+    FlightEngine --> FlightDataAccess
+    FlightDataAccess --> FlightDatabase
+    ConsumerApp --> FlightBoardAPI
+    BackofficeApp --> FlightBoardAPI
 ```
 
-### Sequence Diagram for Adding a Flight
+### Real-time Communication Sequence
 
 ```mermaid
 sequenceDiagram
-    participant Admin as Admin (Backoffice)
-    participant Backoffice as Backoffice Application
-    participant Backend as Backend
-    participant DB as Database
+    participant Admin as Admin User
+    participant Backoffice as Backoffice App
+    participant API as Flight API
+    participant SignalR as SignalR Hub
+    participant Consumer as Consumer App
+    participant Cache as Redis Cache
+    participant DB as SQLite DB
 
-    Admin->>Backoffice: Submit flight details
-    Backoffice->>Backend: Send POST /api/flights
-    Backend->>DB: Validate and store flight data
-    DB-->>Backend: Confirmation
-    Backend-->>Backoffice: Success response
-    Backend-->>ConsumerApp: Notify via SignalR
+    Admin->>Backoffice: Create/Update Flight
+    Backoffice->>API: POST/PUT /api/flights
+    API->>Cache: Check cache validity
+    API->>DB: Persist flight data
+    DB-->>API: Confirmation
+    API->>Cache: Update cached data
+    API->>SignalR: Broadcast flight update
+    SignalR-->>Consumer: Real-time notification
+    SignalR-->>Backoffice: Update confirmation
+    API-->>Backoffice: Success response
+    Consumer->>Consumer: Update flight display
+    Backoffice->>Backoffice: Refresh management view
+```
+
+### DevContainer Development Architecture
+
+```mermaid
+graph TB
+    subgraph "Development Environment"
+        subgraph "API DevContainer"
+            API_DEV[.NET 9 SDK<br/>EF Core Tools<br/>Port 5183/7022]
+        end
+        
+        subgraph "Consumer DevContainer"
+            CONSUMER_DEV[Node.js 20<br/>React Dev Server<br/>Port 3000]
+        end
+        
+        subgraph "Backoffice DevContainer"
+            BACKOFFICE_DEV[Node.js 20<br/>React Dev Server<br/>Port 3001]
+        end
+        
+        subgraph "Shared Infrastructure"
+            SHARED_DB[SQLite Database<br/>Volume Mounted]
+            SHARED_LOGS[Shared Logs<br/>Development Debugging]
+        end
+    end
+    
+    API_DEV <--> SHARED_DB
+    CONSUMER_DEV <--> API_DEV
+    BACKOFFICE_DEV <--> API_DEV
+    API_DEV --> SHARED_LOGS
+    CONSUMER_DEV --> SHARED_LOGS
+    BACKOFFICE_DEV --> SHARED_LOGS
 ```
 
 ### Component Diagram for System Interaction

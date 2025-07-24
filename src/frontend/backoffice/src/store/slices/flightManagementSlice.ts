@@ -5,7 +5,6 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import {
   FlightDto,
   CreateFlightDto,
-  UpdateFlightDto,
   FlightFormErrors,
 } from "../../types/flight.types"
 

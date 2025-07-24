@@ -17,6 +17,7 @@ public class CacheService : ICacheService
     private readonly ILogger<CacheService> _logger;
     private readonly JsonSerializerOptions _jsonOptions;
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    private volatile bool _redisAvailable = true;
 
     public CacheService(
         IDistributedCache distributedCache,
@@ -44,17 +45,34 @@ public class CacheService : ICacheService
                 return memoryCachedValue;
             }
 
-            // Try distributed cache (L2 cache)
-            var distributedValue = await _distributedCache.GetStringAsync(key, cancellationToken);
-            if (!string.IsNullOrEmpty(distributedValue))
+            // Try Redis only if we think it's available
+            if (_redisAvailable)
             {
-                var deserializedValue = JsonSerializer.Deserialize<T>(distributedValue, _jsonOptions);
-                
-                // Populate L1 cache
-                _memoryCache.Set(key, deserializedValue, TimeSpan.FromMinutes(5));
-                
-                _logger.LogDebug("Cache hit (distributed): {Key}", key);
-                return deserializedValue;
+                try
+                {
+                    using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(500)); // Very short timeout
+
+                    var distributedValue = await _distributedCache.GetStringAsync(key, timeoutCts.Token);
+                    if (!string.IsNullOrEmpty(distributedValue))
+                    {
+                        var deserializedValue = JsonSerializer.Deserialize<T>(distributedValue, _jsonOptions);
+                        
+                        // Populate L1 cache for faster access next time
+                        _memoryCache.Set(key, deserializedValue, TimeSpan.FromMinutes(5));
+                        
+                        _logger.LogDebug("Cache hit (Redis): {Key}", key);
+                        return deserializedValue;
+                    }
+                }
+                catch (Exception redisEx)
+                {
+                    _redisAvailable = false;
+                    _logger.LogWarning(redisEx, "Redis cache failed for key: {Key} - switching to memory-only mode", key);
+                    
+                    // Schedule Redis availability check after 30 seconds
+                    _ = Task.Delay(30000, cancellationToken).ContinueWith(_ => _redisAvailable = true, cancellationToken);
+                }
             }
 
             _logger.LogDebug("Cache miss: {Key}", key);
@@ -75,22 +93,40 @@ public class CacheService : ICacheService
         
         try
         {
-            // Set in memory cache (L1)
+            // Always set in memory cache (L1) - this always works
             _memoryCache.Set(key, value, TimeSpan.FromMinutes(5));
+            _logger.LogDebug("Cache set (memory): {Key}", key);
 
-            // Set in distributed cache (L2)
-            var serializedValue = JsonSerializer.Serialize(value, _jsonOptions);
-            var options = new DistributedCacheEntryOptions
+            // Try Redis only if we think it's available
+            if (_redisAvailable)
             {
-                AbsoluteExpirationRelativeToNow = defaultExpiration
-            };
+                try
+                {
+                    var serializedValue = JsonSerializer.Serialize(value, _jsonOptions);
+                    var options = new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = defaultExpiration
+                    };
 
-            await _distributedCache.SetStringAsync(key, serializedValue, options, cancellationToken);
-            _logger.LogDebug("Cache set: {Key} (expires in {Expiration})", key, defaultExpiration);
+                    using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(500)); // Very short timeout
+
+                    await _distributedCache.SetStringAsync(key, serializedValue, options, timeoutCts.Token);
+                    _logger.LogDebug("Cache set (Redis): {Key}", key);
+                }
+                catch (Exception redisEx)
+                {
+                    _redisAvailable = false;
+                    _logger.LogWarning(redisEx, "Redis cache failed for key: {Key} - switching to memory-only mode", key);
+                    
+                    // Schedule Redis availability check after 30 seconds
+                    _ = Task.Delay(30000, cancellationToken).ContinueWith(_ => _redisAvailable = true, cancellationToken);
+                }
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Cache set error for key: {Key}", key);
+            _logger.LogError(ex, "Cache set error for key: {Key}", key);
         }
     }
 
@@ -99,7 +135,21 @@ public class CacheService : ICacheService
         try
         {
             _memoryCache.Remove(key);
-            await _distributedCache.RemoveAsync(key, cancellationToken);
+            if (_redisAvailable)
+            {
+                try
+                {
+                    await _distributedCache.RemoveAsync(key, cancellationToken);
+                }
+                catch (Exception redisEx)
+                {
+                    _logger.LogWarning(redisEx, "Redis cache remove failed for key: {Key}", key);
+                    _redisAvailable = false;
+
+                    // Schedule Redis availability check after 30 seconds
+                    _ = Task.Delay(30000, cancellationToken).ContinueWith(_ => _redisAvailable = true, cancellationToken);
+                }
+            }
             _logger.LogDebug("Cache removed: {Key}", key);
         }
         catch (Exception ex)
@@ -137,8 +187,24 @@ public class CacheService : ICacheService
             }
 
             // Check distributed cache
-            var value = await _distributedCache.GetStringAsync(key, cancellationToken);
-            return !string.IsNullOrEmpty(value);
+            if (_redisAvailable)
+            {
+                try
+                {
+                    var value = await _distributedCache.GetStringAsync(key, cancellationToken);
+                    return !string.IsNullOrEmpty(value);
+                }
+                catch (Exception redisEx)
+                {
+                    _logger.LogWarning(redisEx, "Redis cache exists check failed for key: {Key}", key);
+                    _redisAvailable = false;
+
+                    // Schedule Redis availability check after 30 seconds
+                    _ = Task.Delay(30000, cancellationToken).ContinueWith(_ => _redisAvailable = true, cancellationToken);
+                }
+            }
+
+            return false;
         }
         catch (Exception ex)
         {
@@ -192,7 +258,8 @@ public class CacheService : ICacheService
                 ["TotalKeys"] = 0, // Redis would need to be queried for this
                 ["TotalHits"] = 0, // Would need to track this
                 ["TotalMisses"] = 0, // Would need to track this
-                ["LastUpdated"] = DateTime.UtcNow
+                ["LastUpdated"] = DateTime.UtcNow,
+                ["RedisAvailable"] = _redisAvailable
             };
 
             // Add memory cache stats if available

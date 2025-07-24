@@ -20,6 +20,7 @@ using FlightBoard.Api.iFX.Middleware;
 using FlightBoard.Api.iFX.Engines;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
 
 // Configure Serilog for structured logging
 Log.Logger = new LoggerConfiguration()
@@ -106,6 +107,39 @@ builder.Services.AddAuthorization();
 // Register database seeder
 builder.Services.AddScoped<DatabaseSeeder>();
 
+// Add memory cache for basic caching
+builder.Services.AddMemoryCache();
+
+// Configure caching with Redis fallback to memory cache
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnectionString))
+{
+    try
+    {
+        // Add distributed cache (Redis) with simplified configuration
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "FlightBoard";
+        });
+        
+        // Use the full CacheService with Redis support
+        builder.Services.AddScoped<ICacheService, CacheService>();
+        
+        Log.Information("Redis cache configured with connection: {RedisConnection}", redisConnectionString);
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Failed to configure Redis cache, falling back to memory cache");
+        builder.Services.AddScoped<ICacheService, FallbackMemoryCacheService>();
+    }
+}
+else
+{
+    Log.Information("No Redis connection string configured, using memory cache");
+    builder.Services.AddScoped<ICacheService, FallbackMemoryCacheService>();
+}
+
 // Register iDesign Method components following proper layering
 
 // Managers (Use case orchestration layer) - using public contract interface
@@ -115,8 +149,8 @@ builder.Services.AddScoped<IFlightManager>(provider =>
     var baseManager = provider.GetRequiredService<FlightManager>();
     var cacheService = provider.GetRequiredService<ICacheService>();
     var perfService = provider.GetRequiredService<IPerformanceService>();
-    var logger = provider.GetRequiredService<ILogger<FlightBoard.Api.Manager.CachedFlightManager>>();
-    return new FlightBoard.Api.Manager.CachedFlightManager(baseManager, cacheService, perfService, logger);
+    var logger = provider.GetRequiredService<ILogger<FlightBoard.Api.Managers.CachedFlightManager>>();
+    return new FlightBoard.Api.Managers.CachedFlightManager(baseManager, cacheService, perfService, logger);
 });
 builder.Services.AddScoped<IAuthManager, AuthManager>();
 builder.Services.AddScoped<IPerformanceManager, PerformanceManager>();
@@ -134,20 +168,6 @@ builder.Services.AddScoped<IUserDataAccess, UserDataAccess>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
 builder.Services.AddScoped<IPerformanceService, PerformanceService>();
-builder.Services.AddScoped<ICacheService, CacheService>();
-
-// Add memory cache for basic caching
-builder.Services.AddMemoryCache();
-
-// Add distributed cache (falls back to memory cache if Redis not available)
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
-    options.InstanceName = "FlightBoard";
-});
-
-// Register fallback cache service
-builder.Services.AddScoped<FallbackMemoryCacheService>();
 
 builder.Services.AddiFXServices();
 
@@ -197,7 +217,11 @@ app.UseCors("AllowFrontends");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
+// Disable HTTPS redirection in development to avoid 307 redirects
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // Map API controllers
 app.MapControllers();

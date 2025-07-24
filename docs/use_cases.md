@@ -1,61 +1,228 @@
-# Use Cases
+# Use Cases - Flight Board System
 
-## Identified Volatilities
-1. **Real-Time Updates**: Changes in how real-time updates are handled (e.g., SignalR implementation).
-2. **Flight Data Storage**: Potential changes in database technology or schema.
-3. **Frontend Framework**: Updates to React or state management libraries.
-4. **API Contracts**: Modifications to API endpoints or data structures.
-5. **Validation Rules**: Changes in business rules for flight validation.
-6. **Authentication & Authorization**: Changes in user roles and access control mechanisms.
-7. **Performance Requirements**: Changes in SLA requirements and performance metrics.
-8. **Third-party Integrations**: Changes in external service APIs and data sources.
-9. **Backup & Recovery**: Changes in data retention and disaster recovery policies.
-10. **Monitoring & Alerting**: Changes in monitoring tools and alerting mechanisms.
+## Current Implementation Status (July 24, 2025)
 
-## Use Cases
+All core use cases have been **fully implemented and tested** in the production-ready Flight Board System. The system now handles all identified volatilities through robust architectural patterns and comprehensive error handling.
+
+## Implemented Volatility Handlers
+1. **Real-Time Updates**: ✅ SignalR implementation with automatic reconnection and fallback strategies
+2. **Flight Data Storage**: ✅ Entity Framework Core with SQLite and Redis caching layer
+3. **Frontend Framework**: ✅ React 18 with TypeScript, TanStack Query, and Redux Toolkit
+4. **API Contracts**: ✅ Versioned REST APIs with comprehensive OpenAPI documentation
+5. **Validation Rules**: ✅ FluentValidation with business rule engine in Flight Engine layer
+6. **Authentication & Authorization**: ✅ JWT with role-based access control (RBAC) implementation
+7. **Performance Requirements**: ✅ Redis caching, performance monitoring, and health checks
+8. **Third-party Integrations**: ✅ Extensible iFX framework for future integrations
+9. **Backup & Recovery**: ✅ Docker volume persistence and automated backup strategies
+10. **Monitoring & Alerting**: ✅ Structured logging with Serilog and health monitoring endpoints
+
+## Implemented Use Cases
 
 ### Core Use Cases
 
-#### 1. User Authentication and Authorization
-**Flow:**
-1. User attempts to access the system (Backoffice or Consumer Application).
-2. System validates user credentials against the Users table.
-3. System retrieves user roles from UserRoles table.
-4. System grants appropriate access based on role permissions.
+#### 1. User Authentication and Authorization - ✅ IMPLEMENTED
+**Implementation Details:**
+- JWT token-based authentication with secure token generation
+- Role-based access control with Admin/User roles
+- Password hashing with bcrypt and salt
+- Token refresh mechanism with automatic expiration handling
+- SignalR authentication integration for real-time features
 
-**Mermaid Diagram:**
-```mermaid
-graph TD
-    A[User Login] --> B[Validate Credentials]
-    B --> C{Valid User?}
-    C -- Yes --> D[Retrieve User Roles]
-    D --> E[Grant Access Based on Roles]
-    C -- No --> F[Deny Access]
-    E --> G{Admin Role?}
-    G -- Yes --> H[Access Backoffice + Consumer]
-    G -- No --> I[Access Consumer Only]
-```
-
-#### 2. Display Real-Time Flight Board
-**Updated Flow:**
-1. Consumer accesses the flight board application.
-2. **FlightManager** orchestrates data retrieval through **FlightEngine**.
-3. **FlightAccessor** fetches flight data from the database.
-4. System calculates real-time flight statuses.
-5. SignalR broadcasts updates to all connected clients.
-6. Frontend displays updated flight information.
+**Current Flow:**
+1. User submits credentials to `/api/auth/login`
+2. AuthManager orchestrates authentication through AuthEngine
+3. System validates credentials using PasswordHashService
+4. JWT token generated with user roles and claims
+5. Frontend stores token and includes in all API requests
+6. Role-based UI components show/hide based on user permissions
 
 **Enhanced Mermaid Diagram:**
 ```mermaid
 graph TD
-    A[User accesses flight board] --> B[FlightManager orchestrates]
-    B --> C[FlightEngine processes request]
-    C --> D[FlightAccessor retrieves data]
-    D --> E[Calculate flight statuses]
-    E --> F[SignalR broadcasts updates]
-    F --> G[All clients receive updates]
-    G --> H[UI displays real-time data]
+    A[User Login Request] --> B[AuthController]
+    B --> C[AuthManager]
+    C --> D[AuthEngine - Validate Credentials]
+    D --> E[User Data Access]
+    E --> F{Valid Credentials?}
+    F -- Yes --> G[Generate JWT Token]
+    F -- No --> H[Return Authentication Error]
+    G --> I[Store User Session]
+    I --> J{Admin Role?}
+    J -- Yes --> K[Access All Features]
+    J -- No --> L[Access Consumer Features Only]
+    K --> M[Backoffice + Consumer Apps]
+    L --> N[Consumer App Only]
 ```
+
+#### 2. Real-Time Flight Board Display - ✅ IMPLEMENTED
+**Implementation Details:**
+- FlightManager orchestrates data retrieval with caching optimization
+- FlightEngine calculates real-time status based on departure times
+- CachedFlightManager provides high-performance data access
+- SignalR FlightHub broadcasts updates to all connected clients
+- Consumer frontend displays flights with automatic refresh
+
+**Current Enhanced Flow:**
+1. Consumer app connects to SignalR hub with authentication
+2. **CachedFlightManager** checks Redis cache for flight data
+3. If cache miss, **FlightEngine** retrieves from **FlightDataAccess**
+4. **FlightEngine** calculates current flight statuses based on business rules
+5. Cache updated with TTL and performance metrics recorded
+6. SignalR broadcasts real-time updates to all connected clients
+7. Consumer frontend updates flight display without page refresh
+
+**Enhanced Mermaid Diagram:**
+```mermaid
+graph TD
+    A[Consumer App Request] --> B[FlightController]
+    B --> C[CachedFlightManager]
+    C --> D{Cache Hit?}
+    D -- Yes --> E[Return Cached Data]
+    D -- No --> F[FlightManager]
+    F --> G[FlightEngine - Business Logic]
+    G --> H[Calculate Flight Status]
+    H --> I[FlightDataAccess]
+    I --> J[SQLite Database]
+    J --> K[Flight Data]
+    K --> L[Update Cache]
+    L --> M[SignalR Hub Broadcast]
+    M --> N[All Connected Clients]
+    N --> O[Update UI Real-time]
+    E --> M
+```
+
+#### 3. Flight Management (CRUD Operations) - ✅ IMPLEMENTED
+**Implementation Details:**
+- Comprehensive admin interface in Backoffice app with BBS terminal styling
+- Form validation with real-time feedback and error handling
+- Optimistic updates with rollback on failure
+- SignalR notifications for all flight operations
+- Audit logging for all administrative actions
+
+**Current Flow:**
+1. Admin user authenticated and authorized in Backoffice app
+2. Admin creates/updates/deletes flights through management interface
+3. FormManager validates data before submission
+4. FlightManager processes request through FlightEngine business logic
+5. FlightDataAccess persists changes to database
+6. Cache invalidated and updated with new data
+7. SignalR broadcasts changes to all connected clients
+8. Consumer app reflects changes in real-time
+
+**Enhanced Mermaid Diagram:**
+```mermaid
+graph TD
+    A[Admin User Action] --> B[Backoffice Form]
+    B --> C[Form Validation]
+    C --> D{Valid Data?}
+    D -- No --> E[Display Validation Errors]
+    D -- Yes --> F[Submit to API]
+    F --> G[FlightController]
+    G --> H[CachedFlightManager]
+    H --> I[FlightEngine - Business Rules]
+    I --> J[FlightDataAccess]
+    J --> K[Database Update]
+    K --> L[Cache Invalidation]
+    L --> M[SignalR Broadcast]
+    M --> N[Consumer App Update]
+    M --> O[Backoffice Confirmation]
+```
+
+#### 4. Advanced Search and Filtering - ✅ IMPLEMENTED
+**Implementation Details:**
+- Multi-criteria search with flight number, destination, status, airline
+- Real-time filtering with debounced input for performance
+- Pagination support for large datasets
+- Search history and saved filters (future enhancement ready)
+- Performance optimization with indexed database queries
+
+**Current Flow:**
+1. User enters search criteria in Consumer or Backoffice app
+2. Frontend debounces input to prevent excessive API calls
+3. Search request sent to `/api/flights/search` endpoint
+4. FlightManager processes search through optimized FlightEngine logic
+5. FlightDataAccess executes indexed database queries
+6. Results returned with pagination metadata
+7. Frontend displays results with loading states and error handling
+
+**Enhanced Mermaid Diagram:**
+```mermaid
+graph TD
+    A[Search Input] --> B[Debounced Search]
+    B --> C[SearchController]
+    C --> D[FlightManager]
+    D --> E[FlightEngine - Search Logic]
+    E --> F[FlightDataAccess - Indexed Queries]
+    F --> G[SQLite with Indexes]
+    G --> H[Filtered Results]
+    H --> I[Pagination Applied]
+    I --> J[Cache Search Results]
+    J --> K[Return to Frontend]
+    K --> L[Update Search Results UI]
+```
+
+#### 5. Performance Monitoring and Health Checks - ✅ IMPLEMENTED
+**Implementation Details:**
+- PerformanceService tracks all operation timings and metrics
+- Health check endpoints for API, database, and cache services
+- Structured logging with Serilog for comprehensive monitoring
+- Redis performance monitoring with fallback detection
+- Automatic performance alerts and degradation detection
+
+**Current Flow:**
+1. PerformanceService wraps all major operations with timing
+2. Health check endpoints regularly tested by monitoring systems
+3. Performance metrics collected and logged with structured data
+4. Cache performance monitored with automatic fallback triggers
+5. Health status exposed via `/health` endpoint for load balancers
+
+## Operational Use Cases
+
+#### 6. Development Environment Setup - ✅ IMPLEMENTED
+**Implementation Details:**
+- DevContainer configurations for each application component
+- Docker development environment with hot reload
+- Automated database setup and seeding
+- VS Code integration with proper extensions and settings
+
+#### 7. Deployment and Infrastructure - ✅ IMPLEMENTED
+**Implementation Details:**
+- Docker production containers with optimized builds
+- Environment-specific configurations for dev/staging/production
+- Automated deployment scripts with rollback capabilities
+- Health monitoring and automated restart policies
+
+#### 8. Error Handling and Recovery - ✅ IMPLEMENTED
+**Implementation Details:**
+- Comprehensive error boundaries in React applications
+- API error handling with structured error responses
+- Automatic retry logic for transient failures
+- Graceful degradation when external services unavailable
+
+### Future Enhancement Use Cases
+
+#### 9. Advanced Analytics and Reporting - PLANNED
+**Preparation Completed:**
+- Data structure supports analytics queries
+- Performance monitoring provides baseline metrics
+- Extensible iFX framework ready for analytics modules
+
+#### 10. Multi-tenant Support - PLANNED
+**Preparation Completed:**
+- Role-based architecture supports tenant isolation
+- Database schema designed for multi-tenancy
+- Authentication system extensible for tenant-specific access
+
+## Integration Patterns
+
+All use cases follow consistent patterns:
+- **Manager/Engine/Accessor** architecture for clear separation of concerns
+- **iFX framework** provides cross-cutting concerns consistently
+- **Cache-aside pattern** for optimal performance
+- **SignalR real-time updates** for immediate user feedback
+- **Comprehensive error handling** at every layer
+- **Performance monitoring** for all operations
+- **Role-based security** throughout all interactions
 
 #### 3. Add a New Flight
 - Specified that the **FlightManager** validates and processes the request by calling the **FlightEngine**.

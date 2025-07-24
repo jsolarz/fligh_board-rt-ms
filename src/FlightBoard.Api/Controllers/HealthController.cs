@@ -10,7 +10,7 @@ namespace FlightBoard.Api.Controllers;
 /// Health check controller for monitoring application status
 /// </summary>
 [ApiController]
-[Route("[controller]")]
+[Route("api/flights/[controller]")]
 [Produces("application/json")]
 public class HealthController : ControllerBase
 {
@@ -164,4 +164,18 @@ public class HealthController : ControllerBase
             };
         }
     }
+}
+
+/// <summary>
+/// Health check result model for database status
+/// </summary>
+public class HealthCheckResult
+{
+    public required string Status { get; set; }
+    public required bool IsHealthy { get; set; }
+    public required bool Connected { get; set; }
+    public string? Provider { get; set; }
+    public int? FlightCount { get; set; }
+    public int? UserCount { get; set; }
+    public string? Error { get; set; }
 }

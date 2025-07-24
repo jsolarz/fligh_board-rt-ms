@@ -93,6 +93,12 @@ echo    • View logs:         cd infra\docker ^&^& docker-compose logs -f
 echo    • Stop services:     cd infra\docker ^&^& docker-compose down
 echo    • Restart services:  cd infra\docker ^&^& docker-compose restart
 echo.
+echo ⚙️  Environment Configuration:
+echo    • For HTTPS production, edit frontend .env files:
+echo      - src\frontend\consumer\.env.production
+echo      - src\frontend\backoffice\.env.production
+echo    • Update REACT_APP_API_URL and REACT_APP_SIGNALR_URL as needed
+echo.
 echo 📁 Project structure:
 echo    • Source code:       src\
 echo    • Infrastructure:    infra\

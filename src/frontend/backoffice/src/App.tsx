@@ -2,7 +2,7 @@
 // BBS Terminal styling with flight management interface
 
 import React from "react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { Provider } from "react-redux"
 import { queryClient } from "./config/query-client"
@@ -61,34 +61,40 @@ const AdminContent: React.FC = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="App">
-        {/* Terminal Header */}
-        <header className="terminal-header">
-          <h1 className="flicker">
-            ═══════════════════════════════════════════════════════════════
-            <br />
-            ███████╗██╗ ██╗ ██████╗ ██╗ ██╗████████╗ ██████╗ ██████╗ ███████╗
-            ██╔════╝██║ ██║██╔════╝ ██║ ██║╚══██╔══╝ ██╔═══██╗██╔══██╗██╔════╝
-            █████╗ ██║ ██║██║ ███╗███████║ ██║ ██║ ██║██████╔╝███████╗ ██╔══╝
-            ██║ ██║██║ ██║██╔══██║ ██║ ██║ ██║██╔═══╝ ╚════██║ ██║
-            ███████╗██║╚██████╔╝██║ ██║ ██║ ╚██████╔╝██║ ███████║ ╚═╝
-            ╚══════╝╚═╝ ╚═════╝ ╚═╝ ╚═╝ ╚═╝ ╚═════╝ ╚═╝ ╚══════╝
-            <br />
-            ═══════════════════════════════════════════════════════════════
-          </h1>
-          <div className="system-info">
-            <span className="terminal-prompt">
-              FLIGHT_BOARD_ADMIN_TERMINAL v2.1.0
-            </span>
-            <br />
-            <span className="terminal-prompt">ACCESS_LEVEL: ADMINISTRATOR</span>
-            <br />
-            <span className="terminal-prompt">
-              SESSION: {new Date().toISOString().slice(0, 19)}
-            </span>
-          </div>
-        </header>
+    <div className="App">
+      {/* Terminal Header */}
+      <header className="terminal-header">
+        <h1 className="header-flicker">
+          <pre className="ascii-art-terminal">
+{`┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ ███████╗██╗     ██╗ ██████╗ ██╗  ██╗████████╗    ██████╗  ██████╗  █████╗ ██████╗ ██████╗ │
+│ ██╔════╝██║     ██║██╔════╝ ██║  ██║╚══██╔══╝    ██╔══██╗██╔═══██╗██╔══██╗██╔══██╗██╔══██╗│
+│ █████╗  ██║     ██║██║  ███╗███████║   ██║       ██████╔╝██║   ██║███████║██████╔╝██║  ██║│
+│ ██╔══╝  ██║     ██║██║   ██║██╔══██║   ██║       ██╔══██╗██║   ██║██╔══██║██╔══██╗██║  ██║│
+│ ██║     ███████╗██║╚██████╔╝██║  ██║   ██║       ██████╔╝╚██████╔╝██║  ██║██║  ██║██████╔╝│
+│ ╚═╝     ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ │
+│                                                                                           │
+│                        █████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗                          │
+│                       ██╔══██╗██╔══██╗████╗ ████║██║████╗  ██║                          │
+│                       ███████║██║  ██║██╔████╔██║██║██╔██╗ ██║                          │
+│                       ██╔══██║██║  ██║██║╚██╔╝██║██║██║╚██╗██║                          │
+│                       ██║  ██║██████╔╝██║ ╚═╝ ██║██║██║ ╚████║                          │
+│                       ╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝                          │
+└─────────────────────────────────────────────────────────────────────────────────────┘`}
+          </pre>
+        </h1>
+        <div className="system-info">
+          <span className="terminal-prompt">
+            FLIGHT_BOARD_ADMIN_TERMINAL v2.1.0
+          </span>
+          <br />
+          <span className="terminal-prompt">ACCESS_LEVEL: ADMINISTRATOR</span>
+          <br />
+          <span className="terminal-prompt">
+            SESSION: {new Date().toISOString().slice(0, 19)}
+          </span>
+        </div>
+      </header>
 
         {/* System Status */}
         <section className="system-status mb-2">
@@ -155,19 +161,16 @@ const AdminContent: React.FC = () => {
           </div>
         </footer>
       </div>
+    )
+  }
 
-      {/* React Query DevTools (only in development) */}
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  )
-}
-
-// Main App component with Redux Provider
+// Main App component with providers in correct order
 function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <AdminContent />
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </Provider>
   )

@@ -1,52 +1,285 @@
-/* Additional BBS Terminal Styling for Flight Board Backoffice Components */
+/* Retro BBS Terminal Styling for Flight Board Backoffice Components */
 
-/* Terminal Header Styling */
+/* Global BBS Theme Variables */
+:root {
+  --bbs-bg: #000000;
+  --bbs-text: #00ff00;
+  --bbs-dim: #00aa00;
+  --bbs-border: #00aa00;
+  --bbs-highlight: #ffffff;
+  --bbs-error: #ff4444;
+  --bbs-warning: #ffff00;
+  --bbs-blue: #0088ff;
+}
+
+/* Main App Background - Classic Terminal */
+.App {
+  background: var(--bbs-bg);
+  color: var(--bbs-text);
+  font-family: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* Scanlines effect for authentic CRT feel */
+.App::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 0, 0.03) 2px,
+    rgba(0, 255, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Terminal flicker animation */
+@keyframes terminal-flicker {
+  0%, 100% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0.98; }
+}
+
+/* Only the main header should flicker */
+.header-flicker {
+  animation: terminal-flicker 0.15s infinite linear;
+}
+
+/* Enhanced ASCII Art Terminal Styling */
+.ascii-art-terminal {
+  font-family: 'Courier New', monospace;
+  line-height: 1.1;
+  white-space: pre;
+  overflow-x: auto;
+  display: block;
+  text-align: center;
+  margin: 0 auto;
+  color: var(--bbs-text);
+  text-shadow: 0 0 5px var(--bbs-text); /* Reduced from 10px */
+  border: 2px solid var(--bbs-border);
+  padding: 10px;
+  background: rgba(0, 255, 0, 0.02);
+}
+
+/* Terminal Typing Effect - DISABLED */
+@keyframes typing-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.terminal-prompt::after {
+  content: '█';
+  /* animation: typing-cursor 1s infinite; */
+  color: var(--bbs-text);
+  opacity: 0; /* Hide the cursor */
+}
+
+/* Responsive ASCII art sizing for retro terminal */
+@media (max-width: 640px) {
+  .ascii-art-terminal {
+    font-size: 0.35rem;
+    line-height: 1.0;
+    padding: 5px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .ascii-art-terminal {
+    font-size: 0.55rem;
+    line-height: 1.05;
+    padding: 8px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .ascii-art-terminal {
+    font-size: 0.7rem;
+    line-height: 1.1;
+  }
+}
+
+@media (min-width: 1441px) {
+  .ascii-art-terminal {
+    font-size: 0.85rem;
+    line-height: 1.1;
+    max-width: 85vw;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1920px) {
+  .ascii-art-terminal {
+    font-size: 0.95rem;
+    max-width: 80vw;
+  }
+}
+
+/* BBS Terminal Command Styling */
+.terminal-prompt {
+  color: var(--bbs-text);
+  font-weight: bold;
+  text-shadow: 0 0 3px var(--bbs-text); /* Reduced from 5px */
+}
+
+/* Terminal Header with retro styling */
 .terminal-header {
   margin-bottom: 2rem;
   text-align: center;
+  border-bottom: 2px double var(--bbs-border);
+  padding-bottom: 1rem;
 }
 
 .system-info {
   margin-top: 1rem;
   font-size: 12px;
-  color: var(--terminal-dim);
+  color: var(--bbs-dim);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-/* Navigation Styling */
+/* BBS-style buttons */
+button {
+  background: var(--bbs-bg);
+  color: var(--bbs-text);
+  border: 1px solid var(--bbs-border);
+  padding: 0.5rem 1rem;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: var(--bbs-text);
+  color: var(--bbs-bg);
+  text-shadow: none;
+  box-shadow: 0 0 5px var(--bbs-text); /* Reduced from 10px */
+}
+
+button.primary {
+  background: var(--bbs-text);
+  color: var(--bbs-bg);
+  box-shadow: 0 0 3px var(--bbs-text); /* Reduced from 5px */
+}
+
+/* Input fields with BBS styling */
+input, textarea, select {
+  background: var(--bbs-bg);
+  color: var(--bbs-text);
+  border: 1px solid var(--bbs-border);
+  padding: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--bbs-highlight);
+  box-shadow: 0 0 3px var(--bbs-text); /* Reduced from 5px */
+}
+
+/* Navigation and UI Components with BBS styling */
 .terminal-nav {
-  border: 1px solid var(--terminal-border);
+  border: 2px solid var(--bbs-border);
   padding: 1rem;
   background: rgba(0, 255, 0, 0.02);
+  margin-bottom: 1rem;
+}
+
+.terminal-nav::before {
+  content: 'COMMAND MENU';
+  display: block;
+  color: var(--bbs-highlight);
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
 }
 
 .nav-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
-/* System Status */
+/* System Status with retro styling */
 .system-status {
-  border: 1px solid var(--terminal-border);
+  border: 2px solid var(--bbs-border);
   padding: 0.5rem 1rem;
   background: rgba(0, 255, 0, 0.02);
+  margin-bottom: 1rem;
 }
 
-/* Flight List Styling */
-.flight-list {
-  min-height: 400px;
-}
-
-.data-summary {
-  font-size: 12px;
-  color: var(--terminal-dim);
-  border-bottom: 1px solid var(--terminal-border);
-  padding-bottom: 0.5rem;
-}
-
+/* BBS-style data tables */
 .flight-table {
   width: 100%;
   font-size: 12px;
+  border-collapse: collapse;
+  color: var(--bbs-text);
+  font-family: 'Courier New', monospace;
+}
+
+.flight-table th, .flight-table td {
+  border: 1px solid var(--bbs-border);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.flight-table th {
+  background: rgba(0, 255, 0, 0.1);
+  color: var(--bbs-highlight);
+  text-transform: uppercase;
+}
+
+.flight-table tbody tr:nth-child(even) {
+  background: rgba(0, 255, 0, 0.02);
+}
+
+.flight-table tbody tr:hover {
+  background: rgba(0, 255, 0, 0.05);
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+/* Status indicators with BBS colors */
+.status {
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+  padding: 2px 6px;
+  border: 1px solid;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.status.scheduled { 
+  color: var(--bbs-blue); 
+  border-color: var(--bbs-blue);
+}
+
+.status.boarding { 
+  color: var(--bbs-warning); 
+  border-color: var(--bbs-warning);
+}
+
+.status.departed, .status.arrived { 
+  color: var(--bbs-text); 
+  border-color: var(--bbs-text);
+}
+
+.status.delayed, .status.cancelled { 
+  color: var(--bbs-error); 
+  border-color: var(--bbs-error);
 }
 
 .flight-table th {
@@ -110,8 +343,8 @@
   padding: 2rem;
   max-width: 400px;
   width: 90%;
-  box-shadow: inset 0 0 20px rgba(255, 68, 68, 0.1),
-    0 0 20px rgba(255, 68, 68, 0.3);
+  box-shadow: inset 0 0 10px rgba(255, 68, 68, 0.05),
+    0 0 10px rgba(255, 68, 68, 0.15); /* Reduced glow for better readability */
 }
 
 .delete-confirm-modal h3 {

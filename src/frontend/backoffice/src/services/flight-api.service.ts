@@ -11,15 +11,12 @@ import {
   UpdateFlightDto,
   UpdateStatusRequest,
 } from "../types/flight.types"
-
-// API configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL ?? "http://localhost:5183"
-const API_TIMEOUT = 10000 // 10 seconds
+import { apiConfig } from "../config/app.config"
 
 // Create axios instance with default config
 const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
-  timeout: API_TIMEOUT,
+  baseURL: `${apiConfig.apiUrl}/api`,
+  timeout: apiConfig.timeout,
   headers: {
     "Content-Type": "application/json",
   },

@@ -1,5 +1,124 @@
+/* Modern Futuristic Consumer App Styling */
 .App {
   text-align: center;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Futuristic background effects */
+.App::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 159, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 191, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(148, 0, 211, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Cyberpunk glow effects */
+.neon-glow {
+  box-shadow: 
+    0 0 5px rgba(0, 255, 159, 0.5),
+    0 0 10px rgba(0, 255, 159, 0.3),
+    0 0 15px rgba(0, 255, 159, 0.2),
+    0 0 20px rgba(0, 255, 159, 0.1);
+}
+
+.holographic-border {
+  border: 1px solid transparent;
+  background: linear-gradient(45deg, rgba(0, 255, 159, 0.2), rgba(0, 191, 255, 0.2)) border-box;
+  border-radius: 8px;
+}
+
+/* Enhanced ASCII Art responsive styling */
+.ascii-art {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  line-height: 1.2;
+  white-space: pre;
+  overflow-x: auto;
+  display: block;
+  text-align: center;
+  text-shadow: 
+    0 0 5px rgba(0, 255, 159, 0.8),
+    0 0 10px rgba(0, 255, 159, 0.6),
+    0 0 15px rgba(0, 255, 159, 0.4);
+  animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+  0%, 100% { 
+    text-shadow: 
+      0 0 5px rgba(0, 255, 159, 0.8),
+      0 0 10px rgba(0, 255, 159, 0.6),
+      0 0 15px rgba(0, 255, 159, 0.4);
+  }
+  50% { 
+    text-shadow: 
+      0 0 8px rgba(0, 255, 159, 1),
+      0 0 15px rgba(0, 255, 159, 0.8),
+      0 0 20px rgba(0, 255, 159, 0.6);
+  }
+}
+
+/* Futuristic animations */
+@keyframes data-stream {
+  0% {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 100px));
+    opacity: 0;
+  }
+}
+
+.data-stream {
+  animation: data-stream 6s linear infinite;
+}
+
+/* Responsive ASCII art sizing for futuristic theme */
+@media (max-width: 640px) {
+  .ascii-art {
+    font-size: 0.45rem;
+    line-height: 1.1;
+    padding: 0 10px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .ascii-art {
+    font-size: 0.7rem;
+    line-height: 1.15;
+  }
+}
+
+@media (min-width: 1025px) {
+  .ascii-art {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+}
+
+/* Enhanced large screen support */
+@media (min-width: 1920px) {
+  .ascii-art {
+    font-size: 1.05rem;
+    max-width: 85vw;
+    margin: 0 auto;
+  }
 }
 
 .App-logo {

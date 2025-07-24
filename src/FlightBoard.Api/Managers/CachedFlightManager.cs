@@ -3,7 +3,7 @@ using FlightBoard.Api.iFX.Contract.Service;
 using FlightBoard.Api.Models;
 using FlightBoard.Api.DTOs;
 
-namespace FlightBoard.Api.Manager;
+namespace FlightBoard.Api.Managers;
 
 /// <summary>
 /// Cached flight manager with high-performance caching layer
@@ -197,7 +197,7 @@ public class CachedFlightManager : IFlightManager
         
         // Remove date-based caches (last 7 days)
         var today = DateTime.Today;
-        for (int i = 0; i < 7; i++)
+        for (var i = 0; i < 7; i++)
         {
             var date = today.AddDays(i).ToString("yyyy-MM-dd");
             await _cacheService.RemoveAsync(string.Format(FLIGHTS_BY_DATE_KEY, "departure", date));

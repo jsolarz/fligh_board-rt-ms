@@ -7,10 +7,11 @@ import {
   LogLevel,
 } from "@microsoft/signalr"
 import { FlightDto } from "../types/flight.types"
+import { apiConfig } from "../config/app.config"
 
 export class SignalRService {
   private connection: HubConnection | null = null
-  private readonly hubUrl = "http://localhost:5000/flighthub" // Backend SignalR hub URL
+  private readonly hubUrl = apiConfig.signalRUrl || `${apiConfig.apiUrl}/flighthub` // Backend SignalR hub URL
 
   // Event callbacks
   private onFlightCreatedCallback?: (flight: FlightDto) => void

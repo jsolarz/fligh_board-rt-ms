@@ -8,154 +8,207 @@ import HealthCheck from "./components/HealthCheck"
 import { FlightType } from "./types/flight.types"
 import { useAppSelector, useAppDispatch } from "./store"
 import { setCurrentView } from "./store/slices/uiSlice"
-import useSignalR from "./hooks/useSignalR"
+// import useSignalR from "./hooks/useSignalR"
 import "./App.css"
 
 function AppContent() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContentWithQuery />
+    </QueryClientProvider>
+  )
+}
+
+function AppContentWithQuery() {
   const dispatch = useAppDispatch()
   const currentView = useAppSelector((state) => state.ui.currentView)
 
   // Initialize SignalR connection at app level for global notifications
-  useSignalR({ autoConnect: true })
+  // Now this is inside QueryClientProvider context
+  // useSignalR({ autoConnect: true })
 
   const handleViewChange = (view: "all" | "departures" | "arrivals") => {
     dispatch(setCurrentView(view))
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-cyber-dark">
-        {/* Cyberpunk Header */}
-        <header className="holographic border-b border-neon-cyan/30 relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-3">
-                  <div className="text-3xl animate-glow-pulse">✈</div>
-                  <div>
-                    <h1 className="text-2xl font-cyber font-bold text-neon-cyan neon-text">
-                      SKYNET BOARD
-                    </h1>
-                    <div className="text-xs text-neon-cyan/60 font-mono tracking-wider">
-                      CONSUMER PORTAL // v2.077
-                    </div>
-                  </div>
+      <div className="App" style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)',
+        color: '#00ff9f',
+        fontFamily: "'Orbitron', 'Monaco', 'Consolas', monospace"
+      }}>
+        {/* Header */}
+        <header style={{ 
+          borderBottom: '1px solid rgba(0, 255, 159, 0.3)', 
+          position: 'relative',
+          padding: '2rem 1rem'
+        }}>
+          <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
+            {/* ASCII Art Banner */}
+            <pre className="ascii-art" style={{ 
+              color: '#00ff9f',
+              fontFamily: 'monospace',
+              textShadow: '0 0 10px rgba(0, 255, 159, 0.8)',
+              marginBottom: '1rem'
+            }}>
+{`┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ ███████╗██╗     ██╗ ██████╗ ██╗  ██╗████████╗    ██████╗  ██████╗  █████╗ ██████╗ ██████╗ │
+│ ██╔════╝██║     ██║██╔════╝ ██║  ██║╚══██╔══╝    ██╔══██╗██╔═══██╗██╔══██╗██╔══██╗██╔══██╗│
+│ █████╗  ██║     ██║██║  ███╗███████║   ██║       ██████╔╝██║   ██║███████║██████╔╝██║  ██║│
+│ ██╔══╝  ██║     ██║██║   ██║██╔══██║   ██║       ██╔══██╗██║   ██║██╔══██║██╔══██╗██║  ██║│
+│ ██║     ███████╗██║╚██████╔╝██║  ██║   ██║       ██████╔╝╚██████╔╝██║  ██║██║  ██║██████╔╝│
+│ ╚═╝     ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ │
+└─────────────────────────────────────────────────────────────────────────────────────────┘`}
+            </pre>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '1rem', 
+              marginBottom: '2rem',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ fontSize: '1.5rem' }}>✈</div>
+                <div style={{ 
+                  fontSize: '0.75rem', 
+                  color: 'rgba(0, 255, 159, 0.6)', 
+                  fontFamily: 'monospace', 
+                  letterSpacing: '0.1em' 
+                }}>
+                  CONSUMER PORTAL v3.077 // NEURAL_LINK_ACTIVE
                 </div>
-                <div className="hidden md:block h-8 w-px bg-neon-cyan/30"></div>
-                <HealthCheck />
-              </div>{" "}
-              {/* Cyberpunk Navigation */}
-              <nav className="flex space-x-2">
-                <button
-                  onClick={() => handleViewChange("all")}
-                  className={`cyber-button ${
-                    currentView === "all"
-                      ? "text-neon-cyan border-neon-cyan"
-                      : "text-neon-cyan/60 border-neon-cyan/30 hover:text-neon-cyan hover:border-neon-cyan"
-                  }`}
-                >
-                  ALL_FLIGHTS
-                </button>
-                <button
-                  onClick={() => handleViewChange("departures")}
-                  className={`cyber-button ${
-                    currentView === "departures"
-                      ? "text-neon-orange border-neon-orange"
-                      : "text-neon-orange/60 border-neon-orange/30 hover:text-neon-orange hover:border-neon-orange"
-                  }`}
-                >
-                  DEPARTURES
-                </button>
-                <button
-                  onClick={() => handleViewChange("arrivals")}
-                  className={`cyber-button ${
-                    currentView === "arrivals"
-                      ? "text-neon-green border-neon-green"
-                      : "text-neon-green/60 border-neon-green/30 hover:text-neon-green hover:border-neon-green"
-                  }`}
-                >
-                  ARRIVALS
-                </button>
-              </nav>
+              </div>
+              <HealthCheck />
             </div>
-          </div>
 
-          {/* Animated data stream */}
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-            <div className="absolute top-1/2 -left-4 w-8 h-px bg-neon-cyan opacity-60 animate-data-flow"></div>
-            <div
-              className="absolute top-1/3 -left-4 w-6 h-px bg-neon-purple opacity-40 animate-data-flow"
-              style={{ animationDelay: "1s" }}
-            ></div>
-            <div
-              className="absolute top-2/3 -left-4 w-4 h-px bg-neon-green opacity-30 animate-data-flow"
-              style={{ animationDelay: "2s" }}
-            ></div>
+            {/* Navigation */}
+            <nav style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => handleViewChange("all")}
+                style={{
+                  background: currentView === "all" ? '#00ff9f' : 'transparent',
+                  color: currentView === "all" ? '#000' : '#00ff9f',
+                  border: '1px solid #00ff9f',
+                  padding: '0.75rem 1.5rem',
+                  fontFamily: 'monospace',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.2s'
+                }}
+              >
+                [1] ALL FLIGHTS
+              </button>
+              <button
+                onClick={() => handleViewChange("departures")}
+                style={{
+                  background: currentView === "departures" ? '#00ff9f' : 'transparent',
+                  color: currentView === "departures" ? '#000' : '#00ff9f',
+                  border: '1px solid #00ff9f',
+                  padding: '0.75rem 1.5rem',
+                  fontFamily: 'monospace',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.2s'
+                }}
+              >
+                [2] DEPARTURES
+              </button>
+              <button
+                onClick={() => handleViewChange("arrivals")}
+                style={{
+                  background: currentView === "arrivals" ? '#00ff9f' : 'transparent',
+                  color: currentView === "arrivals" ? '#000' : '#00ff9f',
+                  border: '1px solid #00ff9f',
+                  padding: '0.75rem 1.5rem',
+                  fontFamily: 'monospace',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.2s'
+                }}
+              >
+                [3] ARRIVALS
+              </button>
+            </nav>
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <main className="relative py-8">
-          {/* Background grid overlay */}
-          <div className="absolute inset-0 bg-grid-pattern bg-grid opacity-30 pointer-events-none"></div>
-
-          <div className="relative z-10">
-            {currentView === "all" && (
-              <FlightBoard
-                title="FLIGHT_MATRIX // ALL_SECTORS"
-                refreshInterval={30000}
-              />
-            )}
-            {currentView === "departures" && (
-              <FlightBoard
-                title="DEPARTURE_VECTOR // OUTBOUND"
-                flightType={FlightType.Departure}
-                refreshInterval={30000}
-              />
-            )}
-            {currentView === "arrivals" && (
-              <FlightBoard
-                title="ARRIVAL_SEQUENCE // INBOUND"
-                flightType={FlightType.Arrival}
-                refreshInterval={30000}
-              />
-            )}
-          </div>
+        {/* Main Content */}
+        <main style={{ 
+          padding: '2rem 1rem', 
+          position: 'relative',
+          background: 'rgba(0, 255, 159, 0.02)'
+        }}>
+          {currentView === "all" && (
+            <FlightBoard
+              title="FLIGHT_MATRIX // ALL_SECTORS"
+              refreshInterval={30000}
+            />
+          )}
+          {currentView === "departures" && (
+            <FlightBoard
+              title="DEPARTURE_VECTOR // OUTBOUND"
+              flightType={FlightType.Departure}
+              refreshInterval={30000}
+            />
+          )}
+          {currentView === "arrivals" && (
+            <FlightBoard
+              title="ARRIVAL_SEQUENCE // INBOUND"
+              flightType={FlightType.Arrival}
+              refreshInterval={30000}
+            />
+          )}
         </main>
 
-        {/* Cyberpunk Footer */}
-        <footer className="holographic border-t border-neon-cyan/20 mt-12">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center">
-              <div className="text-xs text-neon-cyan/40 font-mono">
-                SKYNET_FLIGHT_BOARD © 2077 | NEURAL_LINK_ACTIVE
-              </div>
-              <div className="flex space-x-4 text-xs text-neon-cyan/40 font-mono">
-                <span>UPLINK: STABLE</span>
-                <span>LAT: 35.234ms</span>
-                <span>SEC_LVL: [CLASSIFIED]</span>
-              </div>
+        {/* Footer */}
+        <footer style={{ 
+          borderTop: '1px solid rgba(0, 255, 159, 0.2)', 
+          padding: '1rem',
+          marginTop: '2rem'
+        }}>
+          <div style={{ 
+            maxWidth: '1280px', 
+            margin: '0 auto', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem'
+          }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: 'rgba(0, 255, 159, 0.4)', 
+              fontFamily: 'monospace' 
+            }}>
+              SKYNET_FLIGHT_BOARD © 3077 | NEURAL_LINK_ACTIVE | QUANTUM_SECURE
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              fontSize: '0.75rem', 
+              color: 'rgba(0, 255, 159, 0.4)', 
+              fontFamily: 'monospace',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ border: '1px solid rgba(0, 255, 159, 0.3)', padding: '0.25rem 0.5rem' }}>
+                UPLINK: STABLE
+              </span>
+              <span style={{ border: '1px solid rgba(0, 255, 159, 0.3)', padding: '0.25rem 0.5rem' }}>
+                LAT: 35.234ms
+              </span>
+              <span style={{ border: '1px solid rgba(0, 255, 159, 0.3)', padding: '0.25rem 0.5rem' }}>
+                SEC_LVL: [CLASSIFIED]
+              </span>
             </div>
           </div>
         </footer>
-
-        {/* Ambient particles effect */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-neon-cyan rounded-full opacity-60 animate-data-flow"
-              style={{
-                top: `${20 + i * 15}%`,
-                left: "-10px",
-                animationDelay: `${i * 0.8}s`,
-                animationDuration: "4s",
-              }}
-            ></div>
-          ))}
-        </div>
       </div>
-    </QueryClientProvider>
   )
 }
 

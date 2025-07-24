@@ -206,16 +206,35 @@ const FlightList: React.FC<FlightListProps> = ({ onEdit, onDelete }) => {
           <span className="terminal-prompt">NAVIGATION:</span>
           <div className="pagination-buttons">
             <button
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+              title="Go to first page"
+            >
+              FIRST
+            </button>
+            <button
               onClick={() => setPage(page - 1)}
               disabled={!data.hasPrevious}
+              title="Previous page"
             >
               PREV
             </button>
             <span className="page-info">
               PAGE {data.page} OF {data.totalPages}
             </span>
-            <button onClick={() => setPage(page + 1)} disabled={!data.hasNext}>
+            <button 
+              onClick={() => setPage(page + 1)} 
+              disabled={!data.hasNext}
+              title="Next page"
+            >
               NEXT
+            </button>
+            <button
+              onClick={() => setPage(data.totalPages)}
+              disabled={page === data.totalPages}
+              title="Go to last page"
+            >
+              LAST
             </button>
           </div>
         </div>

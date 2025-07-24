@@ -1,0 +1,71 @@
+{
+  "name": "FlightBoard Consumer Frontend (React)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "../.."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+      "nodeGypDependencies": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "ms-vscode.vscode-eslint",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.vscode-json",
+        "usernamehw.errorlens",
+        "ms-vscode.vscode-css-peek",
+        "zignd.html-css-class-completion",
+        "humao.rest-client",
+        "ms-playwright.playwright"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        "typescript.preferences.importModuleSpecifier": "relative",
+        "emmet.includeLanguages": {
+          "typescript": "html",
+          "typescriptreact": "html"
+        },
+        "tailwindCSS.includeLanguages": {
+          "typescript": "javascript",
+          "typescriptreact": "javascript"
+        },
+        "files.associations": {
+          "*.css": "tailwindcss"
+        }
+      }
+    }
+  },
+  "forwardPorts": [3000, 3001],
+  "portsAttributes": {
+    "3000": {
+      "label": "Consumer App",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "npm install",
+  "workspaceFolder": "/workspace",
+  "containerEnv": {
+    "REACT_APP_API_URL": "http://localhost:5183",
+    "REACT_APP_SIGNALR_URL": "http://localhost:5183/flighthub",
+    "REACT_APP_ENV": "development",
+    "REACT_APP_DEBUG": "true",
+    "CHOKIDAR_USEPOLLING": "true",
+    "WDS_SOCKET_HOST": "0.0.0.0"
+  },
+  "remoteUser": "node"
+}

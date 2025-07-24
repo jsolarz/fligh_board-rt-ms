@@ -7,7 +7,7 @@ import LoadingSpinner from "./LoadingSpinner"
 import ErrorAlert from "./ErrorAlert"
 import SearchFiltersRedux from "./SearchFiltersRedux"
 import Pagination from "./Pagination"
-import useSignalR from "../hooks/useSignalR"
+// import useSignalR from "../hooks/useSignalR"
 import { useAppSelector, useAppDispatch } from "../store"
 import { setPage } from "../store/slices/searchSlice"
 import {
@@ -33,7 +33,6 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
   const searchParams = useAppSelector(
     (state: any) => state.search.currentSearch
   )
-  const isLoading = useAppSelector((state: any) => state.flightBoard.isLoading)
   const isConnected = useAppSelector(
     (state: any) => state.flightBoard.signalRConnected
   )
@@ -45,22 +44,20 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
   useEffect(() => {
     if (flightType && searchParams.type !== flightType) {
       // Update search params with flight type without triggering page reset
-      const updatedParams = { ...searchParams, type: flightType }
       // Don't dispatch here to avoid circular updates, handle in parent component
     }
-  }, [flightType, searchParams.type])
+  }, [flightType, searchParams.type, searchParams])
 
   // SignalR real-time connection with group filtering
-  const { isConnected: signalRConnected, connectionState: signalRState } =
-    useSignalR({
-      autoConnect: true,
-      joinGroups:
-        flightType === FlightType.Departure
-          ? ["Departures"]
-          : flightType === FlightType.Arrival
-          ? ["Arrivals"]
-          : ["AllFlights"],
-    })
+  // useSignalR({
+  //   autoConnect: true,
+  //   joinGroups:
+  //     flightType === FlightType.Departure
+  //       ? ["Departures"]
+  //       : flightType === FlightType.Arrival
+  //       ? ["Arrivals"]
+  //       : ["AllFlights"],
+  // })
 
   // Handle search parameter changes with useCallback to prevent unnecessary re-renders
   const handleSearchChange = useCallback((newSearchParams: any) => {
@@ -70,7 +67,6 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
   const {
     data: flightsData,
     isLoading: queryLoading,
-    error,
     isError,
     refetch,
   } = useQuery<PagedResponse<FlightDto>>({
