@@ -31,6 +31,7 @@ public static class ApplicationServicesConfiguration
         services.AddScoped<IFlightEngine, FlightEngine>();
         services.AddScoped<IAuthEngine, AuthEngine>();
         services.AddScoped<IPerformanceEngine, PerformanceEngine>();
+        services.AddScoped<IHealthCheckEngine, HealthCheckEngine>();
 
         // Manager layer (use case orchestration)
         services.AddScoped<FlightManager>();
