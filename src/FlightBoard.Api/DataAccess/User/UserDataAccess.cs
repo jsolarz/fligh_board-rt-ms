@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.Data;
-using UserModel = FlightBoard.Api.Models.User;
 
 namespace FlightBoard.Api.DataAccess.User;
 
@@ -21,7 +20,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Gets a user by ID
     /// </summary>
-    public async Task<UserModel?> GetByIdAsync(int id)
+    public async Task<FlightBoard.Api.Core.Entities.User?> GetByIdAsync(int id)
     {
         return await _context.Users
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -30,7 +29,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Gets a user by username
     /// </summary>
-    public async Task<UserModel?> GetByUsernameAsync(string username)
+    public async Task<FlightBoard.Api.Core.Entities.User?> GetByUsernameAsync(string username)
     {
         return await _context.Users
             .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
@@ -39,7 +38,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Gets a user by email
     /// </summary>
-    public async Task<UserModel?> GetByEmailAsync(string email)
+    public async Task<FlightBoard.Api.Core.Entities.User?> GetByEmailAsync(string email)
     {
         return await _context.Users
             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
@@ -48,7 +47,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Gets all users
     /// </summary>
-    public async Task<List<UserModel>> GetAllAsync()
+    public async Task<List<FlightBoard.Api.Core.Entities.User>> GetAllAsync()
     {
         return await _context.Users
             .OrderBy(u => u.Username)
@@ -58,7 +57,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Creates a new user
     /// </summary>
-    public async Task<UserModel> CreateAsync(UserModel user)
+    public async Task<FlightBoard.Api.Core.Entities.User> CreateAsync(FlightBoard.Api.Core.Entities.User user)
     {
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
@@ -68,7 +67,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Updates an existing user
     /// </summary>
-    public async Task<UserModel> UpdateAsync(UserModel user)
+    public async Task<FlightBoard.Api.Core.Entities.User> UpdateAsync(FlightBoard.Api.Core.Entities.User user)
     {
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
@@ -128,7 +127,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Gets a user by refresh token
     /// </summary>
-    public async Task<UserModel?> GetByRefreshTokenAsync(string refreshToken)
+    public async Task<FlightBoard.Api.Core.Entities.User?> GetByRefreshTokenAsync(string refreshToken)
     {
         return await _context.Users
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken &&
@@ -156,7 +155,7 @@ public class UserDataAccess : IUserDataAccess
     /// <summary>
     /// Gets all active users
     /// </summary>
-    public async Task<List<UserModel>> GetActiveUsersAsync()
+    public async Task<List<FlightBoard.Api.Core.Entities.User>> GetActiveUsersAsync()
     {
         return await _context.Users
             .Where(u => u.IsActive)

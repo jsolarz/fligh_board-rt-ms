@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using FlightBoard.Api.Contract.Auth;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.Controllers;
 

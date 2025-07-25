@@ -1,5 +1,5 @@
-using FlightBoard.Api.DTOs;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.DTOs;
+using FlightBoard.Api.Core.Entities;
 
 namespace FlightBoard.Api.Engines;
 
@@ -10,8 +10,8 @@ namespace FlightBoard.Api.Engines;
 public interface IAuthEngine
 {
     // Core authentication operations
-    Task<(bool Success, Models.User? User, string? ErrorMessage)> ValidateUserCredentialsAsync(string username, string password);
-    Task<(bool Success, Models.User? User, string? ErrorMessage)> RegisterUserAsync(RegisterDto registerDto);
+    Task<(bool Success, User? User, string? ErrorMessage)> ValidateUserCredentialsAsync(string username, string password);
+    Task<(bool Success, User? User, string? ErrorMessage)> RegisterUserAsync(RegisterDto registerDto);
 
     // Token validation
     Task<bool> ValidateRefreshTokenAsync(int userId, string refreshToken);
@@ -19,7 +19,7 @@ public interface IAuthEngine
 
     // User management
     Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
-    Task<(bool Success, Models.User? User, string? ErrorMessage)> UpdateUserProfileAsync(int userId, UpdateUserProfileDto updateDto);
+    Task<(bool Success, User? User, string? ErrorMessage)> UpdateUserProfileAsync(int userId, UpdateUserProfileDto updateDto);
 
     // User validation
     Task<bool> IsUsernameAvailableAsync(string username);

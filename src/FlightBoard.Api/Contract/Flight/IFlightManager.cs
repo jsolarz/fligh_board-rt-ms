@@ -1,5 +1,4 @@
-using FlightBoard.Api.DTOs;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.Contract.Flight;
 

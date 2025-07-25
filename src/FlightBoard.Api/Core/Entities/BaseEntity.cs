@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FlightBoard.Api.Models;
+namespace FlightBoard.Api.Core.Entities;
 
 /// <summary>
 /// Base entity class with common audit fields for all entities

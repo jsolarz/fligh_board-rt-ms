@@ -1,4 +1,4 @@
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.iFX.CrossCutting.Notifications;
 

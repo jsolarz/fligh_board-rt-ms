@@ -1,5 +1,5 @@
-using FlightBoard.Api.Models;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.Entities;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.Engines;
 
@@ -55,7 +55,7 @@ public class FlightEngine : IFlightEngine
     /// <summary>
     /// Apply search filters to flight query
     /// </summary>
-    public IQueryable<Flight> ApplySearchFilters(IQueryable<Flight> query, FlightSearchDto searchDto)
+    public IQueryable<Core.Entities.Flight> ApplySearchFilters(IQueryable<Core.Entities.Flight> query, FlightSearchDto searchDto)
     {
         // Apply filters
         if (!string.IsNullOrEmpty(searchDto.FlightNumber))
@@ -99,7 +99,7 @@ public class FlightEngine : IFlightEngine
     /// <summary>
     /// Validate flight data for update
     /// </summary>
-    public void ValidateFlightForUpdate(UpdateFlightDto updateDto, Flight existingFlight)
+    public void ValidateFlightForUpdate(UpdateFlightDto updateDto, Core.Entities.Flight existingFlight)
     {
         if (existingFlight == null)
             throw new ArgumentException("Flight not found", nameof(existingFlight));
@@ -116,13 +116,17 @@ public class FlightEngine : IFlightEngine
     /// <summary>
     /// Map CreateFlightDto to Flight entity
     /// </summary>
-    public Flight MapCreateDtoToEntity(CreateFlightDto createDto)
+    public Core.Entities.Flight MapCreateDtoToEntity(CreateFlightDto createDto)
     {
         var status = Enum.TryParse<FlightStatus>(createDto.Status, true, out var parsedStatus)
             ? parsedStatus
             : FlightStatus.Scheduled;
 
-        return new Flight
+        var type = Enum.TryParse<FlightType>(createDto.Type, true, out var parsedType)
+            ? parsedType
+            : FlightType.Departure;
+
+        return new Core.Entities.Flight
         {
             FlightNumber = createDto.FlightNumber,
             Airline = createDto.Airline,
@@ -136,6 +140,7 @@ public class FlightEngine : IFlightEngine
             AircraftType = createDto.AircraftType,
             DelayMinutes = createDto.DelayMinutes,
             Remarks = createDto.Remarks,
+            Type = type,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -144,7 +149,7 @@ public class FlightEngine : IFlightEngine
     /// <summary>
     /// Map UpdateFlightDto to existing Flight entity
     /// </summary>
-    public Flight MapUpdateDtoToEntity(UpdateFlightDto updateDto, Flight existingFlight)
+    public Core.Entities.Flight MapUpdateDtoToEntity(UpdateFlightDto updateDto, Core.Entities.Flight existingFlight)
     {
         if (!string.IsNullOrEmpty(updateDto.FlightNumber))
             existingFlight.FlightNumber = updateDto.FlightNumber;
@@ -190,6 +195,12 @@ public class FlightEngine : IFlightEngine
 
         if (updateDto.Remarks != null)
             existingFlight.Remarks = updateDto.Remarks;
+
+        if (!string.IsNullOrEmpty(updateDto.Type))
+        {
+            if (Enum.TryParse<FlightType>(updateDto.Type, true, out var type))
+                existingFlight.Type = type;
+        }
 
         existingFlight.UpdatedAt = DateTime.UtcNow;
 

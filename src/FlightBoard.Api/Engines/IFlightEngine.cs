@@ -1,5 +1,5 @@
-using FlightBoard.Api.Models;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.Entities;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.Engines;
 
@@ -9,9 +9,9 @@ namespace FlightBoard.Api.Engines;
 public interface IFlightEngine
 {
     FlightStatus CalculateFlightStatus(DateTime scheduledDeparture, DateTime? actualDeparture = null);
-    IQueryable<Flight> ApplySearchFilters(IQueryable<Flight> query, FlightSearchDto searchDto);
+    IQueryable<Core.Entities.Flight> ApplySearchFilters(IQueryable<Core.Entities.Flight> query, FlightSearchDto searchDto);
     void ValidateFlightForCreation(CreateFlightDto createDto);
-    void ValidateFlightForUpdate(UpdateFlightDto updateDto, Flight existingFlight);
-    Flight MapCreateDtoToEntity(CreateFlightDto createDto);
-    Flight MapUpdateDtoToEntity(UpdateFlightDto updateDto, Flight existingFlight);
+    void ValidateFlightForUpdate(UpdateFlightDto updateDto, Core.Entities.Flight existingFlight);
+    Core.Entities.Flight MapCreateDtoToEntity(CreateFlightDto createDto);
+    Core.Entities.Flight MapUpdateDtoToEntity(UpdateFlightDto updateDto, Core.Entities.Flight existingFlight);
 }

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FlightBoard.Api.Models;
+namespace FlightBoard.Api.Core.Entities;
 
 /// <summary>
 /// Flight entity representing flight information with real-time status updates

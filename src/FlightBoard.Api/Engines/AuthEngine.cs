@@ -1,5 +1,5 @@
-using FlightBoard.Api.DTOs;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.DTOs;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.DataAccess.User;
 using FlightBoard.Api.iFX.Contract;
 
@@ -23,7 +23,7 @@ public class AuthEngine : IAuthEngine
     /// <summary>
     /// Validates user credentials for login
     /// </summary>
-    public async Task<(bool Success, Models.User? User, string? ErrorMessage)> ValidateUserCredentialsAsync(string username, string password)
+    public async Task<(bool Success, User? User, string? ErrorMessage)> ValidateUserCredentialsAsync(string username, string password)
     {
         // Input validation
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
@@ -56,7 +56,7 @@ public class AuthEngine : IAuthEngine
     /// <summary>
     /// Registers a new user with business rule validation
     /// </summary>
-    public async Task<(bool Success, Models.User? User, string? ErrorMessage)> RegisterUserAsync(RegisterDto registerDto)
+    public async Task<(bool Success, User? User, string? ErrorMessage)> RegisterUserAsync(RegisterDto registerDto)
     {
         // Check if username is available
         if (!await _userDataAccess.IsUsernameAvailableAsync(registerDto.Username))
@@ -77,7 +77,7 @@ public class AuthEngine : IAuthEngine
         }
 
         // Create new user
-        var user = new Models.User
+        var user = new User
         {
             Username = registerDto.Username.Trim(),
             Email = registerDto.Email.Trim().ToLowerInvariant(),
@@ -159,7 +159,7 @@ public class AuthEngine : IAuthEngine
     /// <summary>
     /// Updates a user's profile information
     /// </summary>
-    public async Task<(bool Success, Models.User? User, string? ErrorMessage)> UpdateUserProfileAsync(int userId, UpdateUserProfileDto updateDto)
+    public async Task<(bool Success, User? User, string? ErrorMessage)> UpdateUserProfileAsync(int userId, UpdateUserProfileDto updateDto)
     {
         var user = await _userDataAccess.GetByIdAsync(userId);
         if (user == null)

@@ -1,5 +1,3 @@
-using FlightBoard.Api.Models;
-
 namespace FlightBoard.Api.iFX.Utilities.Extensions;
 
 /// <summary>

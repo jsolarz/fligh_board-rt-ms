@@ -1,9 +1,9 @@
 using FlightBoard.Api.Contract.Auth;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
 using FlightBoard.Api.Engines;
 using FlightBoard.Api.DataAccess.User;
 using FlightBoard.Api.iFX.Contract;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.Entities;
 
 namespace FlightBoard.Api.Managers;
 

@@ -2,10 +2,10 @@ using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.Services;
 using FlightBoard.Api.Hubs;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Tests.Services;
 

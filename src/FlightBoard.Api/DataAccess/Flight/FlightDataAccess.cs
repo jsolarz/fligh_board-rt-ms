@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using FlightBoard.Api.Data;
-using FlightBoard.Api.Models;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.iFX.Contract.Service;
 using FlightBoard.Api.iFX.Utility;
 
@@ -25,17 +24,17 @@ public class FlightDataAccess : IFlightDataAccess
         _cacheService = cacheService;
     }
 
-    public Task<IQueryable<Models.Flight>> GetFlightsQueryAsync()
+    public Task<IQueryable<Core.Entities.Flight>> GetFlightsQueryAsync()
     {
         return Task.FromResult(_context.Flights.AsQueryable());
     }
 
-    public async Task<Models.Flight?> GetFlightByIdAsync(int id)
+    public async Task<Core.Entities.Flight?> GetFlightByIdAsync(int id)
     {
         try
         {
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHT_DETAIL, id);
-            var cachedFlight = await _cacheService.GetAsync<Models.Flight>(cacheKey);
+            var cachedFlight = await _cacheService.GetAsync<Core.Entities.Flight>(cacheKey);
 
             if (cachedFlight != null)
             {
@@ -60,7 +59,7 @@ public class FlightDataAccess : IFlightDataAccess
         }
     }
 
-    public async Task<Models.Flight> CreateFlightAsync(Models.Flight flight)
+    public async Task<Core.Entities.Flight> CreateFlightAsync(Core.Entities.Flight flight)
     {
         try
         {
@@ -80,7 +79,7 @@ public class FlightDataAccess : IFlightDataAccess
         }
     }
 
-    public async Task<Models.Flight> UpdateFlightAsync(Models.Flight flight)
+    public async Task<Core.Entities.Flight> UpdateFlightAsync(Core.Entities.Flight flight)
     {
         try
         {
@@ -141,12 +140,12 @@ public class FlightDataAccess : IFlightDataAccess
         _logger.LogDebug("Invalidated all flight-related caches");
     }
 
-    public async Task<int> GetTotalFlightsCountAsync(IQueryable<Models.Flight> query)
+    public async Task<int> GetTotalFlightsCountAsync(IQueryable<Core.Entities.Flight> query)
     {
         return await query.CountAsync();
     }
 
-    public async Task<List<Models.Flight>> GetPagedFlightsAsync(IQueryable<Models.Flight> query, int page, int pageSize)
+    public async Task<List<Core.Entities.Flight>> GetPagedFlightsAsync(IQueryable<Core.Entities.Flight> query, int page, int pageSize)
     {
         return await query
             .OrderBy(f => f.ScheduledDeparture) // Add default ordering for pagination
@@ -163,13 +162,13 @@ public class FlightDataAccess : IFlightDataAccess
     /// <summary>
     /// Gets flights departing on a specific date with caching
     /// </summary>
-    public async Task<List<Models.Flight>> GetFlightsByDepartureDateAsync(DateTime date)
+    public async Task<List<Core.Entities.Flight>> GetFlightsByDepartureDateAsync(DateTime date)
     {
         try
         {
             var dateKey = date.ToString("yyyy-MM-dd");
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHTS_DEPARTURE, dateKey);
-            var cachedFlights = await _cacheService.GetAsync<List<Models.Flight>>(cacheKey);
+            var cachedFlights = await _cacheService.GetAsync<List<Core.Entities.Flight>>(cacheKey);
 
             if (cachedFlights != null)
             {
@@ -200,13 +199,13 @@ public class FlightDataAccess : IFlightDataAccess
     /// <summary>
     /// Gets flights arriving on a specific date with caching
     /// </summary>
-    public async Task<List<Models.Flight>> GetFlightsByArrivalDateAsync(DateTime date)
+    public async Task<List<Core.Entities.Flight>> GetFlightsByArrivalDateAsync(DateTime date)
     {
         try
         {
             var dateKey = date.ToString("yyyy-MM-dd");
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHTS_ARRIVAL, dateKey);
-            var cachedFlights = await _cacheService.GetAsync<List<Models.Flight>>(cacheKey);
+            var cachedFlights = await _cacheService.GetAsync<List<Core.Entities.Flight>>(cacheKey);
 
             if (cachedFlights != null)
             {
@@ -237,12 +236,12 @@ public class FlightDataAccess : IFlightDataAccess
     /// <summary>
     /// Gets flights by status with caching
     /// </summary>
-    public async Task<List<Models.Flight>> GetFlightsByStatusAsync(string status)
+    public async Task<List<Core.Entities.Flight>> GetFlightsByStatusAsync(string status)
     {
         try
         {
             var cacheKey = CacheKeys.Format(CacheKeys.FLIGHTS_STATUS, status);
-            var cachedFlights = await _cacheService.GetAsync<List<Models.Flight>>(cacheKey);
+            var cachedFlights = await _cacheService.GetAsync<List<Core.Entities.Flight>>(cacheKey);
 
             if (cachedFlights != null)
             {
@@ -251,10 +250,10 @@ public class FlightDataAccess : IFlightDataAccess
             }
 
             // Convert string to enum
-            if (!Enum.TryParse<Models.FlightStatus>(status, true, out var flightStatus))
+            if (!Enum.TryParse<FlightStatus>(status, true, out var flightStatus))
             {
                 _logger.LogWarning("Invalid flight status provided: {Status}", status);
-                return new List<Models.Flight>();
+                return new List<Core.Entities.Flight>();
             }
 
             var flights = await _context.Flights

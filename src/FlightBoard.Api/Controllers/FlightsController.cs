@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
 using FlightBoard.Api.Contract.Flight;
 using FlightBoard.Api.Attributes;
 using Asp.Versioning;

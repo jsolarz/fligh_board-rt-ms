@@ -1,5 +1,5 @@
-using FlightBoard.Api.Models;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.Entities;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.iFX.Utilities.Mapping;
 

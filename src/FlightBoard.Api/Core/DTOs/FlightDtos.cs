@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using FlightBoard.Api.Validation;
 
-namespace FlightBoard.Api.DTOs;
+namespace FlightBoard.Api.Core.DTOs;
 
 /// <summary>
 /// DTO for flight responses to clients using modern C# record syntax

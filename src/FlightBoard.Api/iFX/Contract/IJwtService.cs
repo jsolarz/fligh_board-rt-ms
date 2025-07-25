@@ -1,4 +1,4 @@
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.Entities;
 
 namespace FlightBoard.Api.iFX.Contract;
 

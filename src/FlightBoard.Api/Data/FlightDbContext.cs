@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.Entities;
 using System.Linq.Expressions;
 
 namespace FlightBoard.Api.Data;

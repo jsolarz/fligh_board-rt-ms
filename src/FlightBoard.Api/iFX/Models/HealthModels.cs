@@ -1,4 +1,4 @@
-namespace FlightBoard.Api.Models;
+namespace FlightBoard.Api.iFX.Models;
 
 /// <summary>
 /// Comprehensive health check result containing all system health data

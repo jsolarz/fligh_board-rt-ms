@@ -35,13 +35,13 @@ public static class ApplicationServicesConfiguration
 
         // Manager layer (use case orchestration)
         services.AddScoped<FlightManager>();
-        services.AddScoped<IFlightManager>(provider =>
+        services.AddScoped<Contract.Flight.IFlightManager>(provider =>
         {
             var baseManager = provider.GetRequiredService<FlightManager>();
             var cacheService = provider.GetRequiredService<ICacheService>();
             var perfService = provider.GetRequiredService<IPerformanceService>();
-            var logger = provider.GetRequiredService<ILogger<FlightBoard.Api.Managers.CachedFlightManager>>();
-            return new FlightBoard.Api.Managers.CachedFlightManager(baseManager, cacheService, perfService, logger);
+            var logger = provider.GetRequiredService<ILogger<CachedFlightManager>>();
+            return new CachedFlightManager(baseManager, cacheService, perfService, logger);
         });
         services.AddScoped<IAuthManager, AuthManager>();
         services.AddScoped<IPerformanceManager, PerformanceManager>();

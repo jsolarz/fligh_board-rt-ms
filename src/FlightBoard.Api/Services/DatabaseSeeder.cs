@@ -1,5 +1,5 @@
 using FlightBoard.Api.Data;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.iFX.Contract;
 using Microsoft.EntityFrameworkCore;
 
@@ -56,10 +56,10 @@ public class DatabaseSeeder
     /// <summary>
     /// Generate sample flight data for testing and demonstration
     /// </summary>
-    private List<Flight> GenerateSampleFlights()
+    private List<Core.Entities.Flight> GenerateSampleFlights()
     {
         var baseDate = DateTime.UtcNow.Date;
-        var flights = new List<Flight>();
+        var flights = new List<Core.Entities.Flight>();
 
         // Sample airlines and airports
         var airlines = new[] { "AA", "DL", "UA", "BA", "LH", "AF", "KL", "EK" };
@@ -87,7 +87,7 @@ public class DatabaseSeeder
                 var delayMinutes = GenerateRandomDelay(random);
                 var status = GenerateFlightStatus(scheduledDeparture, delayMinutes, random);
 
-                flights.Add(new Flight
+                flights.Add(new Core.Entities.Flight
                 {
                     FlightNumber = $"{airline}{random.Next(100, 9999)}",
                     Airline = airline,
@@ -123,7 +123,7 @@ public class DatabaseSeeder
                 var delayMinutes = GenerateRandomDelay(random);
                 var status = GenerateFlightStatus(scheduledDeparture, delayMinutes, random, isArrival: true);
 
-                flights.Add(new Flight
+                flights.Add(new Core.Entities.Flight
                 {
                     FlightNumber = $"{airline}{random.Next(100, 9999)}",
                     Airline = airline,
@@ -257,10 +257,10 @@ public class DatabaseSeeder
 
         _logger.LogInformation("Seeding database with default users");
 
-        var defaultUsers = new List<User>
+        var defaultUsers = new List<Core.Entities.User>
         {
             // Administrator user
-            new User
+            new Core.Entities.User
             {
                 Username = "admin",
                 Email = "admin@flightboard.com",
@@ -274,7 +274,7 @@ public class DatabaseSeeder
             },
 
             // Flight operator user
-            new User
+            new Core.Entities.User
             {
                 Username = "operator",
                 Email = "operator@flightboard.com",
@@ -288,7 +288,7 @@ public class DatabaseSeeder
             },
 
             // Standard user
-            new User
+            new Core.Entities.User
             {
                 Username = "user",
                 Email = "user@flightboard.com",

@@ -1,7 +1,6 @@
 using FlightBoard.Api.Contract.Flight;
 using FlightBoard.Api.iFX.Contract.Service;
-using FlightBoard.Api.Models;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.Managers;
 

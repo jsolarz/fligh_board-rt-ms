@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FlightBoard.Api.Data;
 using FlightBoard.Api.iFX.Engines;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.iFX.Models;
 using FlightBoard.Api.Attributes;
 using Asp.Versioning;
 using System.Reflection;

@@ -1,5 +1,5 @@
-using FlightBoard.Api.DTOs;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.DTOs;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.iFX.Contract;
 
 namespace FlightBoard.Api.iFX.Utilities;

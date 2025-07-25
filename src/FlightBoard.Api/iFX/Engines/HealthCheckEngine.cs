@@ -1,6 +1,6 @@
 using FlightBoard.Api.iFX.Contract.Service;
 using FlightBoard.Api.Data;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.iFX.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Net.NetworkInformation;

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using FlightBoard.Api.Models;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.iFX.Contract;
 
 namespace FlightBoard.Api.iFX.Service;

@@ -1,4 +1,5 @@
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
+using FlightBoard.Api.Core.Entities;
 using FlightBoard.Api.Engines;
 using FlightBoard.Api.DataAccess.Flight;
 using FlightBoard.Api.iFX.CrossCutting.Notifications;
@@ -252,7 +253,7 @@ public class FlightManager : IFlightManager
             var oldStatus = existingFlight.Status.ToString();
 
             // Parse and validate status
-            if (!Enum.TryParse<Models.FlightStatus>(status, true, out var newStatus))
+            if (!Enum.TryParse<FlightStatus>(status, true, out var newStatus))
                 throw new ArgumentException($"Invalid flight status: {status}");
 
             // Update status

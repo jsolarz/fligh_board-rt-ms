@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using FlightBoard.Api.Hubs;
-using FlightBoard.Api.DTOs;
+using FlightBoard.Api.Core.DTOs;
 
 namespace FlightBoard.Api.CrossCutting.Notifications;
 

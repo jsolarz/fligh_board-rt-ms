@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FlightBoard.Api.Models;
+namespace FlightBoard.Api.Core.Entities;
 
 /// <summary>
 /// User entity for authentication and role-based access control

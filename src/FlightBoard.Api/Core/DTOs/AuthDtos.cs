@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FlightBoard.Api.DTOs;
+namespace FlightBoard.Api.Core.DTOs;
 
 /// <summary>
 /// Login request DTO with validation
