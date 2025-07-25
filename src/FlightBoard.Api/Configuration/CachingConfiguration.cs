@@ -11,11 +11,14 @@ namespace FlightBoard.Api.Configuration;
 public static class CachingConfiguration
 {
     /// <summary>
-    /// Add caching services with Redis fallback to memory cache
+    /// Add caching services with Redis fallback to memory cache and comprehensive statistics tracking
     /// </summary>
     public static IServiceCollection AddCachingServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMemoryCache();
+
+        // Register cache statistics tracker
+        services.AddSingleton<ICacheStatisticsTracker, CacheStatisticsTracker>();
 
         var redisConnectionString = configuration.GetConnectionString("Redis");
         if (!string.IsNullOrEmpty(redisConnectionString))

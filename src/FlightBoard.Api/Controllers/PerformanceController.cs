@@ -1,74 +1,89 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using FlightBoard.Api.Contract.Performance;
 using FlightBoard.Api.iFX.Contract.Service;
 
 namespace FlightBoard.Api.Controllers;
 
 /// <summary>
-/// Performance monitoring and metrics API endpoint
-/// Provides runtime performance insights and cache statistics
-/// Requires Admin authorization for sensitive performance data
-/// Uses utility services directly - no Manager layer needed for infrastructure concerns
+/// Performance monitoring and metrics controller
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
 public class PerformanceController : ControllerBase
 {
-    private readonly IPerformanceService _performanceService;
+    private readonly IPerformanceManager _performanceManager;
     private readonly ICacheService _cacheService;
+    private readonly ICacheStatisticsTracker _cacheStatisticsTracker;
     private readonly ILogger<PerformanceController> _logger;
 
     public PerformanceController(
-        IPerformanceService performanceService,
+        IPerformanceManager performanceManager,
         ICacheService cacheService,
+        ICacheStatisticsTracker cacheStatisticsTracker,
         ILogger<PerformanceController> logger)
     {
-        _performanceService = performanceService;
+        _performanceManager = performanceManager;
         _cacheService = cacheService;
+        _cacheStatisticsTracker = cacheStatisticsTracker;
         _logger = logger;
     }
 
     /// <summary>
-    /// Get comprehensive performance summary
+    /// Get comprehensive cache performance analytics
     /// </summary>
-    [HttpGet("summary")]
-    public async Task<ActionResult<PerformanceSummary>> GetPerformanceSummary()
+    [HttpGet("cache/analytics")]
+    public ActionResult GetCacheAnalytics()
     {
         try
         {
-            var summary = await _performanceService.GetSummaryAsync();
-            return Ok(summary);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving performance summary");
-            return StatusCode(500, "Error retrieving performance data");
-        }
-    }
-
-    /// <summary>
-    /// Track custom performance metric
-    /// </summary>
-    [HttpPost("metrics")]
-    public ActionResult TrackMetric([FromBody] TrackMetricRequest request)
-    {
-        try
-        {
-            _performanceService.TrackMetric(request.MetricName, request.Value, request.Properties);
-            _logger.LogInformation("Custom metric tracked: {MetricName} = {Value}", request.MetricName, request.Value);
+            var analytics = _cacheStatisticsTracker.GetStatistics();
             
-            return Ok(new { Message = "Metric tracked successfully" });
+            var response = new
+            {
+                StartTime = analytics.StartTime,
+                Uptime = new
+                {
+                    TotalHours = Math.Round(analytics.Uptime.TotalHours, 2),
+                    Formatted = analytics.Uptime.ToString(@"dd\.hh\:mm\:ss")
+                },
+                Memory = new
+                {
+                    analytics.Memory.TotalHits,
+                    analytics.Memory.TotalMisses,
+                    analytics.Memory.HitRatePercent,
+                    analytics.Memory.AverageResponseTimeMs,
+                    analytics.Memory.CurrentKeyCount,
+                    analytics.Memory.TotalBytesStored
+                },
+                Redis = new
+                {
+                    analytics.Redis.TotalHits,
+                    analytics.Redis.TotalMisses,
+                    analytics.Redis.HitRatePercent,
+                    analytics.Redis.AverageResponseTimeMs,
+                    analytics.Redis.TotalBytesStored
+                },
+                Combined = new
+                {
+                    analytics.Combined.TotalHits,
+                    analytics.Combined.TotalMisses,
+                    analytics.Combined.HitRatePercent,
+                    analytics.Combined.TotalBytesStored
+                },
+                AdditionalMetrics = analytics.AdditionalMetrics
+            };
+
+            return Ok(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error tracking metric: {MetricName}", request.MetricName);
-            return StatusCode(500, "Error tracking metric");
+            _logger.LogError(ex, "Error retrieving cache analytics");
+            return StatusCode(500, "Error retrieving cache analytics");
         }
     }
 
     /// <summary>
-    /// Get cache statistics and performance
+    /// Get basic cache statistics
     /// </summary>
     [HttpGet("cache/stats")]
     public async Task<ActionResult> GetCacheStats()
@@ -86,17 +101,37 @@ public class PerformanceController : ControllerBase
     }
 
     /// <summary>
-    /// Clear all cached data (admin operation)
+    /// Reset cache statistics (admin operation)
+    /// </summary>
+    [HttpPost("cache/stats/reset")]
+    public ActionResult ResetCacheStats()
+    {
+        try
+        {
+            _cacheStatisticsTracker.Reset();
+            _logger.LogWarning("Cache statistics reset by admin");
+            
+            return Ok(new { Message = "Cache statistics reset successfully", ResetTime = DateTime.UtcNow });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting cache statistics");
+            return StatusCode(500, "Error resetting cache statistics");
+        }
+    }
+
+    /// <summary>
+    /// Clear all cached data (admin operation)  
     /// </summary>
     [HttpPost("cache/clear")]
     public async Task<ActionResult> ClearAllCache()
     {
         try
         {
-            await _cacheService.ClearAllAsync();
+            await _performanceManager.ClearAllCacheAsync();
             _logger.LogWarning("All cache cleared by admin");
             
-            return Ok(new { Message = "All cache cleared successfully" });
+            return Ok(new { Message = "All cache cleared successfully", ClearedAt = DateTime.UtcNow });
         }
         catch (Exception ex)
         {
