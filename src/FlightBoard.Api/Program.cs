@@ -17,14 +17,14 @@ builder.Services.AddDatabaseServices(builder.Configuration, builder.Environment)
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddCachingServices(builder.Configuration);
 builder.Services.AddApplicationServices();
-builder.Services.AddWebServices();
+builder.Services.AddWebServices(); // This now includes performance optimizations
 
 var app = builder.Build();
 
 // Initialize database
 await InitializeDatabaseAsync(app.Services);
 
-// Configure middleware pipeline
+// Configure middleware pipeline with performance optimizations
 ConfigureMiddleware(app);
 
 // Configure endpoints
@@ -60,7 +60,7 @@ static async Task InitializeDatabaseAsync(IServiceProvider services)
 }
 
 /// <summary>
-/// Configure the middleware pipeline
+/// Configure the middleware pipeline with performance optimizations
 /// </summary>
 static void ConfigureMiddleware(WebApplication app)
 {
@@ -69,7 +69,13 @@ static void ConfigureMiddleware(WebApplication app)
         app.MapOpenApi();
     }
 
+    // Apply performance optimizations early in the pipeline
+    app.UsePerformanceOptimizations();
+
+    // Custom performance monitoring and caching middleware
     app.UseMiddleware<PerformanceMonitoringMiddleware>();
+    app.UseMiddleware<ResponseCachingMiddleware>();
+
     app.UseCors("AllowFrontends");
     app.UseAuthentication();
     app.UseAuthorization();

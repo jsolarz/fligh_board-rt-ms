@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using FlightBoard.Api.DTOs;
 using FlightBoard.Api.Contract.Flight;
+using FlightBoard.Api.Attributes;
+using Asp.Versioning;
 
 namespace FlightBoard.Api.Controllers;
 
@@ -9,8 +11,11 @@ namespace FlightBoard.Api.Controllers;
 /// Controllers call Managers to orchestrate use cases
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
+[ApiVersioned("1.0")]
 [Produces("application/json")]
+[Compression(Enabled = true, Level = CompressionAttribute.CompressionLevel.Optimal)]
 public class FlightsController : ControllerBase
 {
     private readonly IFlightManager _flightManager;
@@ -28,11 +33,17 @@ public class FlightsController : ControllerBase
     /// <param name="searchDto">Search and filter parameters</param>
     /// <returns>Paginated list of flights</returns>
     [HttpGet]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 120)]
+    [ResponseCache(CacheProfileName = "Default", VaryByQueryKeys = new[] { "page", "pageSize", "airline", "status" })]
     public async Task<ActionResult<PagedResponse<FlightDto>>> GetFlights([FromQuery] FlightSearchDto searchDto)
     {
         try
         {
             var result = await _flightManager.GetFlightsAsync(searchDto);
+            
+            // Add cache status header
+            Response.Headers["X-Cache-Status"] = "MISS";
+            
             return Ok(result);
         }
         catch (Exception ex)
@@ -48,6 +59,8 @@ public class FlightsController : ControllerBase
     /// <param name="id">Flight ID</param>
     /// <returns>Flight details</returns>
     [HttpGet("{id:int}")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 300)]
+    [ResponseCache(CacheProfileName = "Long", VaryByQueryKeys = new[] { "id" })]
     public async Task<ActionResult<FlightDto>> GetFlight(int id)
     {
         try
@@ -55,6 +68,10 @@ public class FlightsController : ControllerBase
             var flight = await _flightManager.GetFlightByIdAsync(id);
             if (flight == null)
                 return NotFound($"Flight with ID {id} not found");
+
+            // Add ETag for client-side caching
+            var etag = $"\"{flight.Id}-{flight.UpdatedAt.Ticks}\"";
+            Response.Headers.ETag = etag;
 
             return Ok(flight);
         }
@@ -71,6 +88,7 @@ public class FlightsController : ControllerBase
     /// <param name="createDto">Flight creation data</param>
     /// <returns>Created flight</returns>
     [HttpPost]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public async Task<ActionResult<FlightDto>> CreateFlight([FromBody] CreateFlightDto createDto)
     {
         try
@@ -79,7 +97,7 @@ public class FlightsController : ControllerBase
                 return BadRequest(ModelState);
 
             var flight = await _flightManager.CreateFlightAsync(createDto);
-            return CreatedAtAction(nameof(GetFlight), new { id = flight.Id }, flight);
+            return CreatedAtAction(nameof(GetFlight), new { id = flight.Id, version = "1.0" }, flight);
         }
         catch (ArgumentException ex)
         {
@@ -100,6 +118,7 @@ public class FlightsController : ControllerBase
     /// <param name="updateDto">Flight update data</param>
     /// <returns>Updated flight</returns>
     [HttpPut("{id:int}")]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public async Task<ActionResult<FlightDto>> UpdateFlight(int id, [FromBody] UpdateFlightDto updateDto)
     {
         try
@@ -128,6 +147,7 @@ public class FlightsController : ControllerBase
     /// <param name="id">Flight ID</param>
     /// <returns>Success status</returns>
     [HttpDelete("{id:int}")]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public async Task<ActionResult> DeleteFlight(int id)
     {
         try
@@ -152,6 +172,7 @@ public class FlightsController : ControllerBase
     /// <param name="statusRequest">Status update request</param>
     /// <returns>Updated flight</returns>
     [HttpPatch("{id:int}/status")]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public async Task<ActionResult<FlightDto>> UpdateFlightStatus(int id, [FromBody] UpdateStatusRequest statusRequest)
     {
         try
@@ -180,6 +201,8 @@ public class FlightsController : ControllerBase
     /// <param name="searchDto">Search and filter parameters</param>
     /// <returns>Paginated list of matching flights</returns>
     [HttpGet("search")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 300)]
+    [ResponseCache(CacheProfileName = "Long", VaryByQueryKeys = new[] { "flightNumber", "airline", "origin", "destination", "status", "page", "pageSize" })]
     public async Task<ActionResult<PagedResponse<FlightDto>>> SearchFlights([FromQuery] FlightSearchDto searchDto)
     {
         try
@@ -189,6 +212,11 @@ public class FlightsController : ControllerBase
 
             // Use the same method as the main GET endpoint for consistency
             var result = await _flightManager.GetFlightsAsync(searchDto);
+            
+            // Add performance headers
+            Response.Headers.Add("X-Total-Count", result.TotalCount.ToString());
+            Response.Headers.Add("X-Page-Size", result.PageSize.ToString());
+            
             return Ok(result);
         }
         catch (Exception ex)
@@ -205,12 +233,17 @@ public class FlightsController : ControllerBase
     /// <param name="pageSize">Items per page (default: 20)</param>
     /// <returns>Paginated departure flights</returns>
     [HttpGet("departures")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 120)]
+    [ResponseCache(CacheProfileName = "Default", VaryByQueryKeys = new[] { "page", "pageSize" })]
     public async Task<ActionResult<PagedResponse<FlightDto>>> GetDepartures([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         try
         {
             var searchDto = new FlightSearchDto { Type = "Departure", Page = page, PageSize = pageSize };
             var result = await _flightManager.GetFlightsAsync(searchDto);
+            
+            Response.Headers.Add("X-Cache-Key", $"departures-{page}-{pageSize}");
+            
             return Ok(result);
         }
         catch (Exception ex)
@@ -227,12 +260,17 @@ public class FlightsController : ControllerBase
     /// <param name="pageSize">Items per page (default: 20)</param>
     /// <returns>Paginated arrival flights</returns>
     [HttpGet("arrivals")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 120)]
+    [ResponseCache(CacheProfileName = "Default", VaryByQueryKeys = new[] { "page", "pageSize" })]
     public async Task<ActionResult<PagedResponse<FlightDto>>> GetArrivals([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         try
         {
             var searchDto = new FlightSearchDto { Type = "Arrival", Page = page, PageSize = pageSize };
             var result = await _flightManager.GetFlightsAsync(searchDto);
+            
+            Response.Headers.Add("X-Cache-Key", $"arrivals-{page}-{pageSize}");
+            
             return Ok(result);
         }
         catch (Exception ex)
@@ -248,11 +286,19 @@ public class FlightsController : ControllerBase
     /// <param name="date">Departure date (YYYY-MM-DD format)</param>
     /// <returns>List of flights departing on the specified date</returns>
     [HttpGet("departures/{date:datetime}")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 600)]
+    [ResponseCache(CacheProfileName = "Long", VaryByQueryKeys = new[] { "date" })]
     public async Task<ActionResult<List<FlightDto>>> GetFlightsByDeparture(DateTime date)
     {
         try
         {
             var result = await _flightManager.GetFlightsByDepartureDateAsync(date);
+            
+            // Add date-specific cache headers
+            var dateStr = date.ToString("yyyy-MM-dd");
+            Response.Headers.Add("X-Cache-Key", $"departures-{dateStr}");
+            Response.Headers.Add("X-Date-Filter", dateStr);
+            
             return Ok(result);
         }
         catch (Exception ex)
@@ -268,11 +314,19 @@ public class FlightsController : ControllerBase
     /// <param name="date">Arrival date (YYYY-MM-DD format)</param>
     /// <returns>List of flights arriving on the specified date</returns>
     [HttpGet("arrivals/{date:datetime}")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 600)]
+    [ResponseCache(CacheProfileName = "Long", VaryByQueryKeys = new[] { "date" })]
     public async Task<ActionResult<List<FlightDto>>> GetFlightsByArrival(DateTime date)
     {
         try
         {
             var result = await _flightManager.GetFlightsByArrivalDateAsync(date);
+            
+            // Add date-specific cache headers
+            var dateStr = date.ToString("yyyy-MM-dd");
+            Response.Headers.Add("X-Cache-Key", $"arrivals-{dateStr}");
+            Response.Headers.Add("X-Date-Filter", dateStr);
+            
             return Ok(result);
         }
         catch (Exception ex)
@@ -288,11 +342,18 @@ public class FlightsController : ControllerBase
     /// <param name="status">Flight status (scheduled, delayed, boarding, etc.)</param>
     /// <returns>List of flights with the specified status</returns>
     [HttpGet("status/{status}")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 180)]
+    [ResponseCache(CacheProfileName = "Default", VaryByQueryKeys = new[] { "status" })]
     public async Task<ActionResult<List<FlightDto>>> GetFlightsByStatus(string status)
     {
         try
         {
             var result = await _flightManager.GetFlightsByStatusAsync(status);
+            
+            // Add status-specific headers
+            Response.Headers.Add("X-Status-Filter", status);
+            Response.Headers.Add("X-Result-Count", result.Count.ToString());
+            
             return Ok(result);
         }
         catch (Exception ex)

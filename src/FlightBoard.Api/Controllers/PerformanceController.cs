@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using FlightBoard.Api.Contract.Performance;
 using FlightBoard.Api.iFX.Contract.Service;
+using FlightBoard.Api.Attributes;
+using Asp.Versioning;
 
 namespace FlightBoard.Api.Controllers;
 
@@ -8,7 +10,11 @@ namespace FlightBoard.Api.Controllers;
 /// Performance monitoring and metrics controller
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
+[ApiVersioned("1.0")]
+[Produces("application/json")]
+[Compression(Enabled = true)]
 public class PerformanceController : ControllerBase
 {
     private readonly IPerformanceManager _performanceManager;
@@ -32,6 +38,8 @@ public class PerformanceController : ControllerBase
     /// Get comprehensive cache performance analytics
     /// </summary>
     [HttpGet("cache/analytics")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 60)]
+    [ResponseCache(CacheProfileName = "Short")]
     public ActionResult GetCacheAnalytics()
     {
         try
@@ -73,6 +81,10 @@ public class PerformanceController : ControllerBase
                 AdditionalMetrics = analytics.AdditionalMetrics
             };
 
+            // Add performance headers
+            Response.Headers.Add("X-Analytics-Generated", DateTime.UtcNow.ToString("O"));
+            Response.Headers.Add("X-Cache-Efficiency", analytics.AdditionalMetrics.GetValueOrDefault("OverallEfficiency", 0).ToString());
+
             return Ok(response);
         }
         catch (Exception ex)
@@ -86,11 +98,21 @@ public class PerformanceController : ControllerBase
     /// Get basic cache statistics
     /// </summary>
     [HttpGet("cache/stats")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 30)]
+    [ResponseCache(CacheProfileName = "Short")]
     public async Task<ActionResult> GetCacheStats()
     {
         try
         {
             var stats = await _cacheService.GetStatsAsync();
+            
+            // Add cache performance headers
+            Response.Headers.Add("X-Stats-Generated", DateTime.UtcNow.ToString("O"));
+            if (stats.TryGetValue("RedisAvailable", out var redisStatus))
+            {
+                Response.Headers.Add("X-Redis-Status", redisStatus.ToString());
+            }
+            
             return Ok(stats);
         }
         catch (Exception ex)
@@ -104,6 +126,7 @@ public class PerformanceController : ControllerBase
     /// Reset cache statistics (admin operation)
     /// </summary>
     [HttpPost("cache/stats/reset")]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public ActionResult ResetCacheStats()
     {
         try
@@ -124,6 +147,7 @@ public class PerformanceController : ControllerBase
     /// Clear all cached data (admin operation)  
     /// </summary>
     [HttpPost("cache/clear")]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public async Task<ActionResult> ClearAllCache()
     {
         try
@@ -139,6 +163,79 @@ public class PerformanceController : ControllerBase
             return StatusCode(500, "Error clearing cache");
         }
     }
+
+    /// <summary>
+    /// Clear cache by pattern (admin operation)
+    /// </summary>
+    [HttpPost("cache/clear/pattern")]
+    [ResponseCache(CacheProfileName = "NoCache")]
+    public async Task<ActionResult> ClearCacheByPattern([FromBody] ClearCachePatternRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Pattern))
+                return BadRequest("Pattern is required");
+
+            await _performanceManager.ClearCacheByPatternAsync(request.Pattern);
+            _logger.LogWarning("Cache cleared by pattern: {Pattern}", request.Pattern);
+            
+            return Ok(new 
+            { 
+                Message = $"Cache cleared for pattern: {request.Pattern}",
+                Pattern = request.Pattern,
+                ClearedAt = DateTime.UtcNow 
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing cache by pattern: {Pattern}", request.Pattern);
+            return StatusCode(500, "Error clearing cache by pattern");
+        }
+    }
+
+    /// <summary>
+    /// Track custom performance metric
+    /// </summary>
+    [HttpPost("metrics/track")]
+    [ResponseCache(CacheProfileName = "NoCache")]
+    public async Task<ActionResult> TrackMetric([FromBody] TrackMetricRequest request)
+    {
+        try
+        {
+            await _performanceManager.TrackMetricAsync(request.MetricName, request.Value, request.Properties);
+            return Ok(new { Message = "Metric tracked successfully", Timestamp = DateTime.UtcNow });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error tracking metric: {MetricName}", request.MetricName);
+            return StatusCode(500, "Error tracking metric");
+        }
+    }
+
+    /// <summary>
+    /// Get system health including cache performance
+    /// </summary>
+    [HttpGet("health")]
+    [HighPerformance(EnableCaching = true, CacheDurationSeconds = 30)]
+    [ResponseCache(CacheProfileName = "Short")]
+    public async Task<ActionResult> GetSystemHealth()
+    {
+        try
+        {
+            var health = await _performanceManager.GetSystemHealthAsync();
+            
+            // Add health status headers
+            Response.Headers.Add("X-Health-Status", health.Status);
+            Response.Headers.Add("X-Health-Checked", DateTime.UtcNow.ToString("O"));
+            
+            return Ok(health);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving system health");
+            return StatusCode(500, "Error retrieving system health");
+        }
+    }
 }
 
 /// <summary>
@@ -149,3 +246,8 @@ public record TrackMetricRequest(
     double Value,
     Dictionary<string, string>? Properties = null
 );
+
+/// <summary>
+/// Request model for clearing cache by pattern
+/// </summary>
+public record ClearCachePatternRequest(string Pattern);
