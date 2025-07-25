@@ -29,7 +29,7 @@ export function useSignalR(options: UseSignalROptions = {}) {
 
   // Update React Query cache when flights change
   const invalidateFlightQueries = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["flights"] })
+    void queryClient.invalidateQueries({ queryKey: ["flights"] })
   }, [queryClient])
 
   // Show cyberpunk-style notifications
@@ -114,7 +114,7 @@ export function useSignalR(options: UseSignalROptions = {}) {
 
     // Auto-connect if enabled
     if (autoConnect) {
-      connect()
+      void connect()
     }
 
     // Cleanup on unmount

@@ -105,7 +105,7 @@ const FlightList: React.FC<FlightListProps> = ({ onEdit, onDelete }) => {
     )
   }
 
-  if (!data || !data.data.length) {
+  if (!data?.data.length) {
     return (
       <div className="text-center p-2">
         <span className="terminal-prompt">NO_FLIGHT_RECORDS_FOUND</span>
@@ -161,7 +161,7 @@ const FlightList: React.FC<FlightListProps> = ({ onEdit, onDelete }) => {
                     EDIT
                   </button>
                   <button
-                    onClick={() => handleDeleteClick(flight.id)}
+                    onClick={() => { handleDeleteClick(flight.id); }}
                     className="danger"
                     title="Delete flight"
                   >
@@ -206,14 +206,14 @@ const FlightList: React.FC<FlightListProps> = ({ onEdit, onDelete }) => {
           <span className="terminal-prompt">NAVIGATION:</span>
           <div className="pagination-buttons">
             <button
-              onClick={() => setPage(1)}
+              onClick={() => { setPage(1); }}
               disabled={page === 1}
               title="Go to first page"
             >
               FIRST
             </button>
             <button
-              onClick={() => setPage(page - 1)}
+              onClick={() => { setPage(page - 1); }}
               disabled={!data.hasPrevious}
               title="Previous page"
             >
@@ -223,14 +223,14 @@ const FlightList: React.FC<FlightListProps> = ({ onEdit, onDelete }) => {
               PAGE {data.page} OF {data.totalPages}
             </span>
             <button 
-              onClick={() => setPage(page + 1)} 
+              onClick={() => { setPage(page + 1); }} 
               disabled={!data.hasNext}
               title="Next page"
             >
               NEXT
             </button>
             <button
-              onClick={() => setPage(data.totalPages)}
+              onClick={() => { setPage(data.totalPages); }}
               disabled={page === data.totalPages}
               title="Go to last page"
             >

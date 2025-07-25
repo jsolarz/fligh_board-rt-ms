@@ -37,11 +37,11 @@ export const QUERY_KEYS = {
 
 // Cache invalidation helpers for admin operations
 export const invalidateFlightData = () => {
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.flights })
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.departures })
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.arrivals })
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.active })
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.delayed })
+  void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.flights })
+  void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.departures })
+  void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.arrivals })
+  void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.active })
+  void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.delayed })
 }
 
 export default queryClient

@@ -457,11 +457,11 @@ const FlightForm: React.FC<FlightFormProps> = ({
         </div>
 
         {/* Error Display */}
-        {(createMutation.error || updateMutation.error) && (
+        {(createMutation.error ?? updateMutation.error) && (
           <div className="error mt-2">
             <span className="terminal-prompt">OPERATION_FAILED:</span>
             <br />
-            {createMutation.error?.message || updateMutation.error?.message}
+            {createMutation.error?.message ?? updateMutation.error?.message}
           </div>
         )}
       </form>

@@ -25,7 +25,7 @@ export interface FlightBoardState {
     | "connected"
     | "reconnecting"
     | "error"
-  signalRConnection: any // SignalR connection object
+  signalRConnection: unknown // SignalR connection object
 
   // Cache and performance
   cacheExpiry: string | null
@@ -192,7 +192,7 @@ const flightBoardSlice = createSlice({
     },
 
     // SignalR connection management
-    setSignalRConnection: (state, action: PayloadAction<any>) => {
+    setSignalRConnection: (state, action: PayloadAction<unknown>) => {
       state.signalRConnection = action.payload
     },
 

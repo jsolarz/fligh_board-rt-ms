@@ -34,7 +34,7 @@ const OptimisticFlightActions: React.FC<OptimisticFlightActionsProps> = ({
     },
     onSuccess: (updatedFlight) => {
       // Real update received, update cache
-      queryClient.setQueryData(['flights'], (oldData: any) => {
+      queryClient.setQueryData(['flights'], (oldData: unknown) => {
         if (!oldData) return oldData;
 
         return {
@@ -74,7 +74,7 @@ const OptimisticFlightActions: React.FC<OptimisticFlightActionsProps> = ({
       return FlightApiService.updateFlight(flight.id, { gate: newGate });
     },
     onSuccess: (updatedFlight) => {
-      queryClient.invalidateQueries({ queryKey: ['flights'] });
+      void queryClient.invalidateQueries({ queryKey: ['flights'] });
       setIsOptimisticUpdate(false);
       onUpdate?.(updatedFlight);
       showUpdateNotification('Gate updated successfully', 'success');
@@ -92,7 +92,7 @@ const OptimisticFlightActions: React.FC<OptimisticFlightActionsProps> = ({
     const element = document.querySelector(`[data-flight-id="${flight.id}"]`);
     if (element) {
       element.classList.add('holo-glitch');
-      setTimeout(() => element.classList.remove('holo-glitch'), 300);
+      setTimeout(() => { element.classList.remove('holo-glitch'); }, 300);
     }
   };
 
@@ -100,7 +100,7 @@ const OptimisticFlightActions: React.FC<OptimisticFlightActionsProps> = ({
     const element = document.querySelector(`[data-flight-id="${flight.id}"] .gate-info`);
     if (element) {
       element.classList.add('data-stream');
-      setTimeout(() => element.classList.remove('data-stream'), 2000);
+      setTimeout(() => { element.classList.remove('data-stream'); }, 2000);
     }
   };
 
@@ -148,7 +148,7 @@ const OptimisticFlightActions: React.FC<OptimisticFlightActionsProps> = ({
                 }
                 ${isOptimisticUpdate ? 'opacity-50 cursor-wait' : 'cursor-pointer'}
               `}
-              onClick={() => statusUpdateMutation.mutate(status.value)}
+              onClick={() => { statusUpdateMutation.mutate(status.value); }}
               disabled={isOptimisticUpdate || statusUpdateMutation.isPending}
             >
               {status.label}

@@ -60,8 +60,8 @@ function detectApiUrl(): string {
 // Validate and provide defaults for API configuration
 function getApiConfig(): ApiConfig {
   const apiUrl = detectApiUrl()
-  const signalRUrl = process.env.REACT_APP_SIGNALR_URL || `${apiUrl}/flighthub`
-  const environment = process.env.REACT_APP_ENV || process.env.NODE_ENV || 'development'
+  const signalRUrl = process.env.REACT_APP_SIGNALR_URL ?? `${apiUrl}/flighthub`
+  const environment = (process.env.REACT_APP_ENV ?? process.env.NODE_ENV) || 'development'
 
   // Parse URL details
   let detectedProtocol: 'http' | 'https' = 'http'
@@ -99,7 +99,7 @@ function getApiConfig(): ApiConfig {
 
 // Get complete app configuration
 export function getAppConfig(): AppConfig {
-  const environment = (process.env.REACT_APP_ENV || process.env.NODE_ENV || 'development') as AppConfig['environment']
+  const environment = ((process.env.REACT_APP_ENV ?? process.env.NODE_ENV) || 'development') as AppConfig['environment']
 
   const config: AppConfig = {
     api: getApiConfig(),

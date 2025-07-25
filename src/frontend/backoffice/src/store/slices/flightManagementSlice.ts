@@ -45,7 +45,7 @@ export interface FlightManagementState {
 
   // Real-time connection for admin updates
   signalRConnected: boolean
-  signalRConnection: any
+  signalRConnection: unknown
 
   // Bulk operations
   selectedFlightIds: number[]
@@ -235,9 +235,9 @@ const flightManagementSlice = createSlice({
 
     setFormField: (
       state,
-      action: PayloadAction<{ field: string; value: any }>
+      action: PayloadAction<{ field: string; value: unknown }>
     ) => {
-      ;(state.formData as any)[action.payload.field] = action.payload.value
+      ;(state.formData as unknown)[action.payload.field] = action.payload.value
       state.isFormDirty = true
       // Clear field error when user starts typing
       if (state.formErrors[action.payload.field as keyof FlightFormErrors]) {
@@ -301,7 +301,7 @@ const flightManagementSlice = createSlice({
     },
 
     // SignalR connection
-    setSignalRConnection: (state, action: PayloadAction<any>) => {
+    setSignalRConnection: (state, action: PayloadAction<unknown>) => {
       state.signalRConnection = action.payload
     },
 

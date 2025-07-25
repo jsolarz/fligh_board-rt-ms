@@ -17,7 +17,7 @@ import {
 import { setSearchFiltersExpanded } from "../store/slices/uiSlice"
 
 interface SearchFiltersProps {
-  onSearchChange: (params: any) => void
+  onSearchChange: (params: unknown) => void
   isLoading?: boolean
 }
 
@@ -37,10 +37,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       onSearchChange(searchParams)
     }, 500)
 
-    return () => clearTimeout(debounceTimer)
+    return () => { clearTimeout(debounceTimer); }
   }, [searchParams, onSearchChange])
 
-  const handleFilterChange = (action: any, value: any) => {
+  const handleFilterChange = (action: unknown, value: any) => {
     dispatch(action(value))
   }
 
@@ -120,7 +120,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 type="text"
                 value={searchParams.flightNumber || ""}
                 onChange={(e) =>
-                  handleFilterChange(setFlightNumber, e.target.value)
+                  { handleFilterChange(setFlightNumber, e.target.value); }
                 }
                 placeholder="e.g., UA123"
                 className="w-full cyber-input"
@@ -137,7 +137,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 type="text"
                 value={searchParams.destination || ""}
                 onChange={(e) =>
-                  handleFilterChange(setDestination, e.target.value)
+                  { handleFilterChange(setDestination, e.target.value); }
                 }
                 placeholder="e.g., LAX, NYC"
                 className="w-full cyber-input"
@@ -152,7 +152,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               </label>
               <select
                 value={searchParams.status || ""}
-                onChange={(e) => handleFilterChange(setStatus, e.target.value)}
+                onChange={(e) => { handleFilterChange(setStatus, e.target.value); }}
                 className="w-full cyber-select"
                 disabled={isLoading}
               >
@@ -173,7 +173,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <input
                 type="text"
                 value={searchParams.airline || ""}
-                onChange={(e) => handleFilterChange(setAirline, e.target.value)}
+                onChange={(e) => { handleFilterChange(setAirline, e.target.value); }}
                 placeholder="e.g., United, Delta"
                 className="w-full cyber-input"
                 disabled={isLoading}
@@ -188,7 +188,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <input
                 type="text"
                 value={searchParams.origin || ""}
-                onChange={(e) => handleFilterChange(setOrigin, e.target.value)}
+                onChange={(e) => { handleFilterChange(setOrigin, e.target.value); }}
                 placeholder="e.g., JFK, DFW"
                 className="w-full cyber-input"
                 disabled={isLoading}
@@ -205,7 +205,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   type="checkbox"
                   checked={searchParams.isDelayed || false}
                   onChange={(e) =>
-                    handleFilterChange(setIsDelayed, e.target.checked)
+                    { handleFilterChange(setIsDelayed, e.target.checked); }
                   }
                   className="cyber-checkbox"
                   disabled={isLoading}

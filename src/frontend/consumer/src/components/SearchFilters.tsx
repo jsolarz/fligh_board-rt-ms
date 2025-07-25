@@ -23,7 +23,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       onSearchChange(localFilters)
     }, 500)
 
-    return () => clearTimeout(debounceTimer)
+    return () => { clearTimeout(debounceTimer); }
   }, [localFilters, onSearchChange])
 
   const handleFilterChange = (
@@ -53,15 +53,15 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       {/* Search Header */}
       <div
         className="flex items-center justify-between p-4 bg-neon-cyan/5 border-b border-neon-cyan/30 cursor-pointer hover:bg-neon-cyan/10 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => { setIsExpanded(!isExpanded); }}
       >
         <div className="flex items-center space-x-3">
           <div className="w-3 h-3 bg-neon-green rounded-full animate-pulse"></div>
           <span className="font-cyber text-neon-cyan font-bold uppercase tracking-wide">
             SEARCH_MATRIX
           </span>
-          {(localFilters.destination ||
-            localFilters.status ||
+          {((localFilters.destination ??
+            localFilters.status ??
             localFilters.flightNumber) && (
             <span className="px-2 py-1 bg-neon-cyan/20 rounded text-xs text-neon-cyan">
               FILTERS_ACTIVE
@@ -112,9 +112,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               </label>
               <input
                 type="text"
-                value={localFilters.flightNumber || ""}
+                value={localFilters.flightNumber ?? ""}
                 onChange={(e) =>
-                  handleFilterChange("flightNumber", e.target.value)
+                  { handleFilterChange("flightNumber", e.target.value); }
                 }
                 placeholder="e.g., UA123"
                 className="w-full cyber-input"
@@ -129,9 +129,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               </label>
               <input
                 type="text"
-                value={localFilters.destination || ""}
+                value={localFilters.destination ?? ""}
                 onChange={(e) =>
-                  handleFilterChange("destination", e.target.value)
+                  { handleFilterChange("destination", e.target.value); }
                 }
                 placeholder="e.g., LAX, NYC"
                 className="w-full cyber-input"
@@ -145,8 +145,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 Status
               </label>
               <select
-                value={localFilters.status || ""}
-                onChange={(e) => handleFilterChange("status", e.target.value)}
+                value={localFilters.status ?? ""}
+                onChange={(e) => { handleFilterChange("status", e.target.value); }}
                 className="w-full cyber-select"
                 disabled={isLoading}
               >
@@ -166,8 +166,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               </label>
               <input
                 type="text"
-                value={localFilters.airline || ""}
-                onChange={(e) => handleFilterChange("airline", e.target.value)}
+                value={localFilters.airline ?? ""}
+                onChange={(e) => { handleFilterChange("airline", e.target.value); }}
                 placeholder="e.g., United, Delta"
                 className="w-full cyber-input"
                 disabled={isLoading}
@@ -181,8 +181,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               </label>
               <input
                 type="text"
-                value={localFilters.origin || ""}
-                onChange={(e) => handleFilterChange("origin", e.target.value)}
+                value={localFilters.origin ?? ""}
+                onChange={(e) => { handleFilterChange("origin", e.target.value); }}
                 placeholder="e.g., JFK, DFW"
                 className="w-full cyber-input"
                 disabled={isLoading}
@@ -197,9 +197,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <label className="cyber-checkbox-container">
                 <input
                   type="checkbox"
-                  checked={localFilters.isDelayed || false}
+                  checked={localFilters.isDelayed ?? false}
                   onChange={(e) =>
-                    handleFilterChange("isDelayed", e.target.checked)
+                    { handleFilterChange("isDelayed", e.target.checked); }
                   }
                   className="cyber-checkbox"
                   disabled={isLoading}
@@ -224,9 +224,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 </label>
                 <input
                   type="datetime-local"
-                  value={localFilters.fromDate || ""}
+                  value={localFilters.fromDate ?? ""}
                   onChange={(e) =>
-                    handleFilterChange("fromDate", e.target.value)
+                    { handleFilterChange("fromDate", e.target.value); }
                   }
                   className="w-full cyber-input"
                   disabled={isLoading}
@@ -238,8 +238,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 </label>
                 <input
                   type="datetime-local"
-                  value={localFilters.toDate || ""}
-                  onChange={(e) => handleFilterChange("toDate", e.target.value)}
+                  value={localFilters.toDate ?? ""}
+                  onChange={(e) => { handleFilterChange("toDate", e.target.value); }}
                   className="w-full cyber-input"
                   disabled={isLoading}
                 />

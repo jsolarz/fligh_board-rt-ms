@@ -21,9 +21,9 @@ import "./App.css"
 // Admin Content Component with Redux integration
 const AdminContent: React.FC = () => {
   const dispatch = useAppDispatch()
-  const mode = useAppSelector((state: any) => state.ui.currentMode)
+  const mode = useAppSelector((state: unknown) => state.ui.currentMode)
   const editingFlight = useAppSelector(
-    (state: any) => state.flightManagement.selectedFlight
+    (state: unknown) => state.flightManagement.selectedFlight
   )
 
   // Handle flight creation
@@ -117,7 +117,7 @@ const AdminContent: React.FC = () => {
             >
               [2] ADD_NEW_FLIGHT
             </button>
-            <button onClick={() => window.location.reload()}>
+            <button onClick={() => { window.location.reload(); }}>
               [3] REFRESH_SYSTEM
             </button>
           </div>

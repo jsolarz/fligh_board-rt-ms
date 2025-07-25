@@ -11,7 +11,7 @@ import { apiConfig } from "../config/app.config"
 
 export class SignalRService {
   private connection: HubConnection | null = null
-  private readonly hubUrl = apiConfig.signalRUrl || `${apiConfig.apiUrl}/flighthub` // Backend SignalR hub URL
+  private readonly hubUrl = apiConfig.signalRUrl ?? `${apiConfig.apiUrl}/flighthub` // Backend SignalR hub URL
 
   // Event callbacks
   private onFlightCreatedCallback?: (flight: FlightDto) => void
@@ -83,7 +83,7 @@ export class SignalRService {
   ): Promise<void> {
     if (this.isConnected) {
       try {
-        await this.connection!.invoke("JoinGroup", groupName)
+        await this.connection?.invoke("JoinGroup", groupName)
         console.log(`📡 Joined SignalR group: ${groupName}`)
       } catch (error) {
         console.error(`Failed to join group ${groupName}:`, error)
@@ -96,7 +96,7 @@ export class SignalRService {
   ): Promise<void> {
     if (this.isConnected) {
       try {
-        await this.connection!.invoke("LeaveGroup", groupName)
+        await this.connection?.invoke("LeaveGroup", groupName)
         console.log(`📡 Left SignalR group: ${groupName}`)
       } catch (error) {
         console.error(`Failed to leave group ${groupName}:`, error)
@@ -174,7 +174,7 @@ export class SignalRService {
 
   // Cleanup
   dispose(): void {
-    this.stop()
+    void this.stop()
   }
 }
 

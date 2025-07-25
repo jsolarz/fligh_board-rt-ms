@@ -102,7 +102,7 @@ export interface AdminState {
   config: {
     apiEndpoints: Record<string, string>
     featureFlags: Record<string, boolean>
-    environmentSettings: Record<string, any>
+    environmentSettings: Record<string, unknown>
   }
 }
 

@@ -31,13 +31,13 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
 
   // Redux state selectors with explicit typing
   const searchParams = useAppSelector(
-    (state: any) => state.search.currentSearch
+    (state: unknown) => state.search.currentSearch
   )
   const isConnected = useAppSelector(
-    (state: any) => state.flightBoard.signalRConnected
+    (state: unknown) => state.flightBoard.signalRConnected
   )
   const connectionState = useAppSelector(
-    (state: any) => state.flightBoard.signalRConnectionState
+    (state: unknown) => state.flightBoard.signalRConnectionState
   )
 
   // Set flight type in search params if provided
@@ -60,7 +60,7 @@ const FlightBoard: React.FC<FlightBoardProps> = ({
   // })
 
   // Handle search parameter changes with useCallback to prevent unnecessary re-renders
-  const handleSearchChange = useCallback((newSearchParams: any) => {
+  const handleSearchChange = useCallback((newSearchParams: unknown) => {
     // Search params are managed by Redux, this is just for backward compatibility
     console.log("Search params changed:", newSearchParams)
   }, [])

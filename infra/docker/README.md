@@ -6,7 +6,7 @@ This folder contains all Docker configurations for deploying the FlightBoard app
 
 ## Prerequisites
 
-- **Docker Desktop** - Install from https://docker.com/products/docker-desktop
+- **Docker Desktop** - Install from <https://docker.com/products/docker-desktop>
 - **Docker Compose** - Included with Docker Desktop
 - **Minimum RAM**: 4GB available for containers
 - **Port Requirements**: 5183 (API), 3000 (Consumer), 3001 (Backoffice), 80/443 (Nginx)
