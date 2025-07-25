@@ -1,252 +1,34 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using FlightBoard.Api.Data;
-using FlightBoard.Api.Services;
 using FlightBoard.Api.Hubs;
-using FlightBoard.Api.Managers;
-using FlightBoard.Api.Engines;
-using FlightBoard.Api.DataAccess.Flight;
-using FlightBoard.Api.DataAccess.User;
-using FlightBoard.Api.Contract.Flight;
-using FlightBoard.Api.Contract.Auth;
-using FlightBoard.Api.Contract.Performance;
-using FlightBoard.Api.iFX;
-using FlightBoard.Api.iFX.Contract;
-using FlightBoard.Api.iFX.Contract.Service;
-using FlightBoard.Api.iFX.Service;
+using FlightBoard.Api.Configuration;
 using FlightBoard.Api.iFX.Middleware;
-using FlightBoard.Api.iFX.Engines;
+using FlightBoard.Api.Services;
 using Serilog;
-using Serilog.Events;
-using StackExchange.Redis;
 
-// Configure Serilog for structured logging
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-    .MinimumLevel.Override("FlightBoard.Api", LogEventLevel.Debug)
-    .Enrich.FromLogContext()
-    .Enrich.WithProperty("Application", "FlightBoard.Api")
-    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-    .WriteTo.File("Logs/flightboard-.log",
-        rollingInterval: RollingInterval.Day,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}",
-        retainedFileCountLimit: 30)
-    .CreateLogger();
+// Configure logging
+LoggingConfiguration.ConfigureSerilog();
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Use Serilog as the logging provider
 builder.Host.UseSerilog();
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-// Configure Entity Framework with SQLite
-builder.Services.AddDbContext<FlightDbContext>(options =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                          ?? "Data Source=..\\..\\Data\\flightboard.db";
-    options.UseSqlite(connectionString);
-
-    // Enable sensitive data logging in development
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-    }
-});
-
-// Configure JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:Secret"]
-    ?? throw new InvalidOperationException("JWT Secret not configured");
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-        ClockSkew = TimeSpan.Zero // No clock skew tolerance
-    };
-
-    // Configure JWT for SignalR
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            var accessToken = context.Request.Query["access_token"];
-            var path = context.HttpContext.Request.Path;
-
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/flighthub"))
-            {
-                context.Token = accessToken;
-            }
-
-            return Task.CompletedTask;
-        }
-    };
-});
-
-builder.Services.AddAuthorization();
-
-// Register database seeder
-builder.Services.AddScoped<DatabaseSeeder>();
-
-// Add memory cache for basic caching
-builder.Services.AddMemoryCache();
-
-// Configure caching with Redis fallback to memory cache
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrEmpty(redisConnectionString))
-{
-    try
-    {
-        // Add distributed cache (Redis) with simplified configuration
-        builder.Services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = redisConnectionString;
-            options.InstanceName = "FlightBoard";
-        });
-        
-        // Use the full CacheService with Redis support
-        builder.Services.AddScoped<ICacheService, CacheService>();
-        
-        Log.Information("Redis cache configured with connection: {RedisConnection}", redisConnectionString);
-    }
-    catch (Exception ex)
-    {
-        Log.Warning(ex, "Failed to configure Redis cache, falling back to memory cache");
-        builder.Services.AddScoped<ICacheService, FallbackMemoryCacheService>();
-    }
-}
-else
-{
-    Log.Information("No Redis connection string configured, using memory cache");
-    builder.Services.AddScoped<ICacheService, FallbackMemoryCacheService>();
-}
-
-// Register iDesign Method components following proper layering
-
-// Managers (Use case orchestration layer) - using public contract interface
-builder.Services.AddScoped<FlightManager>();
-builder.Services.AddScoped<IFlightManager>(provider =>
-{
-    var baseManager = provider.GetRequiredService<FlightManager>();
-    var cacheService = provider.GetRequiredService<ICacheService>();
-    var perfService = provider.GetRequiredService<IPerformanceService>();
-    var logger = provider.GetRequiredService<ILogger<FlightBoard.Api.Managers.CachedFlightManager>>();
-    return new FlightBoard.Api.Managers.CachedFlightManager(baseManager, cacheService, perfService, logger);
-});
-builder.Services.AddScoped<IAuthManager, AuthManager>();
-builder.Services.AddScoped<IPerformanceManager, PerformanceManager>();
-
-// Engines (Business logic layer)
-builder.Services.AddScoped<IFlightEngine, FlightEngine>();
-builder.Services.AddScoped<IAuthEngine, AuthEngine>();
-builder.Services.AddScoped<IPerformanceEngine, PerformanceEngine>();
-
-// Data Access layer - following iDesign Method naming
-builder.Services.AddScoped<IFlightDataAccess, FlightDataAccess>();
-builder.Services.AddScoped<IUserDataAccess, UserDataAccess>();
-
-// iFX Framework Services (Cross-cutting concerns and utilities)
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
-builder.Services.AddScoped<IPerformanceService, PerformanceService>();
-
-builder.Services.AddiFXServices();
-
-// Legacy service registration (maintain for backwards compatibility during transition)
-// Legacy services - removed as part of iDesign architecture cleanup
-// builder.Services.AddScoped<FlightService>(); // Replaced by iDesign FlightManager/Engine/DataAccess
-
-// Add API controllers
-builder.Services.AddControllers();
-
-// Add SignalR
-builder.Services.AddSignalR();
-
-// Add CORS for frontend applications
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontends", policy =>
-    {
-        policy.WithOrigins(
-                "http://localhost:3000",  // Consumer frontend
-                "http://localhost:3001"   // Backoffice frontend
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
+// Configure services
+builder.Services.AddDatabaseServices(builder.Configuration, builder.Environment);
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddCachingServices(builder.Configuration);
+builder.Services.AddApplicationServices();
+builder.Services.AddWebServices();
 
 var app = builder.Build();
 
 // Initialize database
 await InitializeDatabaseAsync(app.Services);
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// Configure middleware pipeline
+ConfigureMiddleware(app);
 
-// Add performance monitoring middleware early in pipeline
-app.UseMiddleware<PerformanceMonitoringMiddleware>();
-
-// Use CORS
-app.UseCors("AllowFrontends");
-
-// Use Authentication and Authorization
-app.UseAuthentication();
-app.UseAuthorization();
-
-// Disable HTTPS redirection in development to avoid 307 redirects
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
-
-// Map API controllers
-app.MapControllers();
-
-// Map SignalR hub
-app.MapHub<FlightHub>("/flighthub");
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// Configure endpoints
+ConfigureEndpoints(app);
 
 app.Run();
 
@@ -277,9 +59,34 @@ static async Task InitializeDatabaseAsync(IServiceProvider services)
     }
 }
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+/// <summary>
+/// Configure the middleware pipeline
+/// </summary>
+static void ConfigureMiddleware(WebApplication app)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+    }
+
+    app.UseMiddleware<PerformanceMonitoringMiddleware>();
+    app.UseCors("AllowFrontends");
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
+}
+
+/// <summary>
+/// Configure application endpoints
+/// </summary>
+static void ConfigureEndpoints(WebApplication app)
+{
+    app.MapControllers();
+    app.MapHub<FlightHub>("/flighthub");
 }
 
 // Make the Program class accessible to integration tests
