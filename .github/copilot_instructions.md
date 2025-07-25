@@ -151,3 +151,4 @@ g. Always go through SDP review before the main work starts.
    - Provide Docker support for easy deployment.
 
 
+NEVER create "shadow" files like "some_original_file_new.go" or "_fixed.go" then `rm` or `mv` to replace the original as it simply creates duplicate declarations requiring multiple VSCode restarts. Use Copilot tools to edit files. When deleting, renaming, or fully rewriting files, always use Copilot's file management tools (such as apply_patch, insert_edit_into_file, or create_file) instead of terminal or OS commands. if moving files and a git repository exists use git move to preserve history

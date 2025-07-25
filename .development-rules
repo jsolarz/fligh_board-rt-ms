@@ -93,7 +93,7 @@ SOLID Detailed Design (aka Saving Your Robot from Eminent Destruction)
 
 Repeat after me:
 
- 
+
 
     Good DD saves your Robot (System) from eminent destruction
     All good DD is SOLID.
@@ -109,7 +109,7 @@ Repeat after me:
         Controllers are merely Facets
     Swagger has supported polymorphism since 2018 (if not earlier)
         Check out: OneOf, AnyOf
-    
+
 structure
 a cohesive interaction between the manager, engines and resource access may constitute a logical service to the world.
 - implementing a set of use cases
@@ -188,3 +188,5 @@ Always prefer AOP SO-style
     Aka Pre/Post Invoke
     This allows you to time every service call
     It also allows you enrich at will with Context
+
+NEVER create "shadow" files like "some_original_file_new.go" or "_fixed.go" then `rm` or `mv` to replace the original as it simply creates duplicate declarations requiring multiple VSCode restarts. Use Copilot tools to edit files. When deleting, renaming, or fully rewriting files, always use Copilot's file management tools (such as apply_patch, insert_edit_into_file, or create_file) instead of terminal or OS commands. if moving files and a git repository exists use git move to preserve history
