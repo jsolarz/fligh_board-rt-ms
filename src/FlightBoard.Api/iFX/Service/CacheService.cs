@@ -2,6 +2,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using FlightBoard.Api.iFX.Contract.Service;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Collections.Concurrent;
 
 namespace FlightBoard.Api.iFX.Service;
 
@@ -14,18 +16,24 @@ public class CacheService : ICacheService
 {
     private readonly IDistributedCache _distributedCache;
     private readonly IMemoryCache _memoryCache;
+    private readonly IRedisService _redisService;
     private readonly ILogger<CacheService> _logger;
     private readonly JsonSerializerOptions _jsonOptions;
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
     private volatile bool _redisAvailable = true;
+    
+    // Track memory cache keys for pattern removal
+    private readonly ConcurrentDictionary<string, bool> _memoryKeyTracker = new();
 
     public CacheService(
         IDistributedCache distributedCache,
         IMemoryCache memoryCache,
+        IRedisService redisService,
         ILogger<CacheService> logger)
     {
         _distributedCache = distributedCache;
         _memoryCache = memoryCache;
+        _redisService = redisService;
         _logger = logger;
         _jsonOptions = new JsonSerializerOptions
         {
@@ -93,8 +101,24 @@ public class CacheService : ICacheService
         
         try
         {
-            // Always set in memory cache (L1) - this always works
-            _memoryCache.Set(key, value, TimeSpan.FromMinutes(5));
+            // Set in memory cache with key tracking
+            var memoryOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+                PostEvictionCallbacks =
+                {
+                    new PostEvictionCallbackRegistration
+                    {
+                        EvictionCallback = (k, v, reason, state) =>
+                        {
+                            _memoryKeyTracker.TryRemove(k.ToString()!, out _);
+                        }
+                    }
+                }
+            };
+            
+            _memoryCache.Set(key, value, memoryOptions);
+            _memoryKeyTracker.TryAdd(key, true);
             _logger.LogDebug("Cache set (memory): {Key}", key);
 
             // Try Redis only if we think it's available
@@ -134,7 +158,10 @@ public class CacheService : ICacheService
     {
         try
         {
+            // Remove from memory cache and tracking
             _memoryCache.Remove(key);
+            _memoryKeyTracker.TryRemove(key, out _);
+            
             if (_redisAvailable)
             {
                 try
@@ -162,17 +189,65 @@ public class CacheService : ICacheService
     {
         try
         {
-            // Note: Pattern removal is Redis-specific and requires additional implementation
-            // For basic implementation, we'll log the request
-            _logger.LogInformation("Pattern removal requested: {Pattern} (requires Redis-specific implementation)", pattern);
+            var totalRemoved = 0;
             
-            // Clear relevant memory cache entries
-            // This is a simplified approach - production code might need more sophisticated cache key tracking
-            await Task.CompletedTask;
+            // Remove from memory cache using pattern matching
+            var memoryRemoved = RemoveFromMemoryCacheByPattern(pattern);
+            totalRemoved += memoryRemoved;
+            
+            // Remove from Redis using the Redis service
+            if (_redisAvailable)
+            {
+                try
+                {
+                    var redisRemoved = await _redisService.RemoveByPatternAsync(pattern, cancellationToken);
+                    totalRemoved += redisRemoved;
+                    _logger.LogInformation("Removed {RedisCount} keys from Redis for pattern: {Pattern}", redisRemoved, pattern);
+                }
+                catch (Exception redisEx)
+                {
+                    _logger.LogWarning(redisEx, "Redis pattern removal failed for pattern: {Pattern}", pattern);
+                    _redisAvailable = false;
+                    
+                    // Schedule Redis availability check after 30 seconds
+                    _ = Task.Delay(30000, cancellationToken).ContinueWith(_ => _redisAvailable = true, cancellationToken);
+                }
+            }
+            
+            _logger.LogInformation("Pattern removal completed: {Pattern} - Total removed: {TotalCount} (Memory: {MemoryCount})", 
+                pattern, totalRemoved, memoryRemoved);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Cache pattern removal error for pattern: {Pattern}", pattern);
+            _logger.LogError(ex, "Cache pattern removal error for pattern: {Pattern}", pattern);
+        }
+    }
+
+    private int RemoveFromMemoryCacheByPattern(string pattern)
+    {
+        try
+        {
+            // Convert pattern to regex (handle wildcards)
+            var regexPattern = "^" + pattern.Replace("*", ".*").Replace("?", ".") + "$";
+            var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            
+            var keysToRemove = _memoryKeyTracker.Keys
+                .Where(key => regex.IsMatch(key))
+                .ToList();
+
+            foreach (var key in keysToRemove)
+            {
+                _memoryCache.Remove(key);
+                _memoryKeyTracker.TryRemove(key, out _);
+            }
+
+            _logger.LogDebug("Removed {Count} keys from memory cache for pattern: {Pattern}", keysToRemove.Count, pattern);
+            return keysToRemove.Count;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error removing memory cache keys by pattern: {Pattern}", pattern);
+            return 0;
         }
     }
 
@@ -248,38 +323,42 @@ public class CacheService : ICacheService
         }
     }
 
-    public Task<Dictionary<string, object>> GetStatsAsync(CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, object>> GetStatsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             var stats = new Dictionary<string, object>
             {
                 ["CacheType"] = "Hybrid (Memory + Distributed)",
-                ["TotalKeys"] = 0, // Redis would need to be queried for this
-                ["TotalHits"] = 0, // Would need to track this
-                ["TotalMisses"] = 0, // Would need to track this
-                ["LastUpdated"] = DateTime.UtcNow,
-                ["RedisAvailable"] = _redisAvailable
+                ["MemoryKeys"] = _memoryKeyTracker.Count,
+                ["RedisAvailable"] = _redisAvailable,
+                ["LastUpdated"] = DateTime.UtcNow
             };
 
-            // Add memory cache stats if available
-            if (_memoryCache is MemoryCache memCache)
+            // Add Redis-specific stats if available
+            if (_redisAvailable)
             {
-                // Note: MemoryCache doesn't expose statistics by default
-                // In production, you'd use a wrapper that tracks these metrics
-                stats["MemoryCacheEnabled"] = true;
+                try
+                {
+                    var redisInfo = await _redisService.GetInfoAsync();
+                    stats["RedisInfo"] = redisInfo;
+                }
+                catch (Exception ex)
+                {
+                    stats["RedisInfoError"] = ex.Message;
+                }
             }
 
-            return Task.FromResult(stats);
+            return stats;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving cache statistics");
-            return Task.FromResult(new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Error"] = ex.Message,
                 ["CacheType"] = "Error"
-            });
+            };
         }
     }
 
@@ -289,19 +368,35 @@ public class CacheService : ICacheService
         {
             _logger.LogWarning("Clearing all cache data");
 
+            var totalCleared = 0;
+
             // Clear memory cache
-            if (_memoryCache is MemoryCache memCache)
+            var memoryKeys = _memoryKeyTracker.Keys.ToList();
+            foreach (var key in memoryKeys)
             {
-                // Note: MemoryCache doesn't have a clear all method by default
-                // This would need a custom implementation or wrapper
-                _logger.LogWarning("Memory cache clear requires custom implementation");
+                _memoryCache.Remove(key);
+                _memoryKeyTracker.TryRemove(key, out _);
+            }
+            totalCleared += memoryKeys.Count;
+
+            // Clear Redis cache if available
+            if (_redisAvailable)
+            {
+                try
+                {
+                    // Use Redis service to clear all keys with FlightBoard prefix
+                    var redisCleared = await _redisService.RemoveByPatternAsync("FlightBoard:*", cancellationToken);
+                    totalCleared += redisCleared;
+                    _logger.LogInformation("Cleared {RedisCount} keys from Redis", redisCleared);
+                }
+                catch (Exception redisEx)
+                {
+                    _logger.LogWarning(redisEx, "Failed to clear Redis cache");
+                }
             }
 
-            // For distributed cache, this would require Redis FLUSHDB command
-            // which is not available through IDistributedCache interface
-            _logger.LogWarning("Distributed cache clear requires Redis-specific implementation");
-
-            await Task.CompletedTask;
+            _logger.LogInformation("Cache clear completed - Total cleared: {TotalCount} (Memory: {MemoryCount})", 
+                totalCleared, memoryKeys.Count);
         }
         catch (Exception ex)
         {
